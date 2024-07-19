@@ -63,3 +63,12 @@ pythonVersion = "3.8"
 
 [project.scripts]
 gauge = "pkg.cli.main:main"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+packages = ["pkg"]
+#include = ["README.md", "LICENSE"]
