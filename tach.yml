@@ -1,8 +1,10 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/gauge-sh/tach/v0.8.1/public/tach-yml-schema.json
 modules:
-  - path: cli
+  - path: pkg
     depends_on: []
-  - path: sdk
+  - path: pkg.cli
+    depends_on: []
+  - path: pkg.sdk
     depends_on: []
 exclude:
   - .*__pycache__
