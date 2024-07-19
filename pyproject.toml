@@ -59,9 +59,6 @@ exempt-modules = ["typing", "typing_extensions"]
 [tool.pyright]
 exclude = ["**/__pycache__", ".venv"]
 strict = ["."]
-executionEnvironments = [
-  { root = "python" }
-]
 pythonVersion = "3.8"
 
 [project.scripts]

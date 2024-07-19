@@ -21,7 +21,7 @@ def test_parser_deploy():
 def test_parser_deploy_no_file(capsys):
     parser = create_parser()
     with pytest.raises(SystemExit) as exc:
-        args = parser.parse_args(["deploy"])
+        parser.parse_args(["deploy"])
     assert exc.value.code == 2
 
     captured = capsys.readouterr()
