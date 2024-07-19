@@ -1,49 +1,53 @@
 import argparse
 
 
-def setup():
+def setup() -> None:
     """Setup the environment."""
     print("Setting up the environment...")
-    return "Setup complete"
+    print("Setup complete")
 
 
-def deploy(file):
+def deploy(file: str) -> None:
     """Deploy the application with the specified file."""
     print(f"Deploying the application with {file}...")
-    return f"Deploy complete with {file}"
+    print(f"Deploy complete with {file}")
 
 
-def status():
+def status() -> None:
     """Check the status of the application."""
     print("Checking the status of the application...")
-    return "Status checked"
+    print("Status checked")
 
 
-def create_parser():
+def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description='A CLI tool with setup, deploy, and status commands.')
 
     subparsers = parser.add_subparsers(dest='command')
     subparsers.required = True
 
-    parser_setup = subparsers.add_parser('setup', help='Setup the environment.')
-    parser_setup.set_defaults(func=setup)
+    subparsers.add_parser('setup', help='Setup the environment.')
 
     parser_deploy = subparsers.add_parser('deploy', help='Deploy the application.')
     parser_deploy.add_argument('file', type=str, help='The file to deploy')
-    parser_deploy.set_defaults(func=lambda args: deploy(args.file))
 
-    parser_status = subparsers.add_parser('status', help='Check the status of the application.')
-    parser_status.set_defaults(func=status)
+    subparsers.add_parser('status', help='Check the status of the application.')
 
     return parser
 
 
-def main():
+def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
-    result = args.func(args)
-    print(result)
+    if args.command == 'setup':
+        setup()
+    elif args.command == 'deploy':
+        deploy(args.file)
+    elif args.command == 'status':
+        status()
+    else:
+        print("Unknown command")
+        parser.print_help()
 
 
 if __name__ == '__main__':

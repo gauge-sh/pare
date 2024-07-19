@@ -65,4 +65,4 @@ executionEnvironments = [
 pythonVersion = "3.8"
 
 [project.scripts]
-gg = "pkg.cli.main:main"
+gauge = "pkg.cli.main:main"

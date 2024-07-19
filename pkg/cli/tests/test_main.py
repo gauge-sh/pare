@@ -1,29 +1,34 @@
+from __future__ import annotations
+
 import pytest
-from cli.main import setup, deploy, status, create_parser
 
-def test_setup():
-    result = setup()
-    assert result == "Setup complete"
+from cli.main import create_parser
 
-def test_deploy():
-    result = deploy('test_file.txt')
-    assert result == "Deploy complete with test_file.txt"
-
-def test_status():
-    result = status()
-    assert result == "Status checked"
 
 def test_parser_setup():
     parser = create_parser()
-    args = parser.parse_args(['setup'])
-    assert args.func(args) == "Setup complete"
+    args = parser.parse_args(["setup"])
+    assert args.command == "setup"
+
 
 def test_parser_deploy():
     parser = create_parser()
-    args = parser.parse_args(['deploy', 'test_file.txt'])
-    assert args.func(args) == "Deploy complete with test_file.txt"
+    args = parser.parse_args(["deploy", "test_file.txt"])
+    assert args.command == "deploy"
+    assert args.file == "test_file.txt"
+
+
+def test_parser_deploy_no_file(capsys):
+    parser = create_parser()
+    with pytest.raises(SystemExit) as exc:
+        args = parser.parse_args(["deploy"])
+    assert exc.value.code == 2
+
+    captured = capsys.readouterr()
+    assert "the following arguments are required: file" in captured.err
+
 
 def test_parser_status():
     parser = create_parser()
-    args = parser.parse_args(['status'])
-    assert args.func(args) == "Status checked"
+    args = parser.parse_args(["status"])
+    assert args.command == "status"
