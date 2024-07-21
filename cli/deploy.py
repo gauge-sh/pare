@@ -8,13 +8,12 @@ import zipfile
 from pathlib import Path
 from time import sleep
 
-import boto3
 import requests
 from rich.console import Console
 
 from cli.console import log_error, log_task
 
-API_URL = "https://api.bridge-cli.com/api/v0.1/deploy"
+API_URL = "https://deploy.gauge.sh"
 DEMO_URL = "demo.bridge-cli.com"
 
 
@@ -55,19 +54,32 @@ class DeployHandler:
         return zip_path
 
     def upload(self, zip_path: Path) -> str:
+        gauge_client_id = os.environ.get(
+            "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
+        )
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
-            try:
-                s3_client = boto3.client("s3")
-                destination_key = f"deploys/{self.deploy_name}.zip"
-                s3_client.upload_file(str(zip_path), self.bucket_name, destination_key)
-            except:
-                pass
-            public_url = (
-                f"https://{self.bucket_name}.s3.amazonaws.com/{destination_key}"
-            )
-            return public_url
+            data = {
+                "name": self.deploy_name[:8],
+            }
+
+            with open(zip_path, "rb") as f:
+                files = {"zip": f}
+                resp = requests.post(
+                    API_URL,
+                    json=data,
+                    headers={"GAUGE_CLIENT_ID": gauge_client_id},
+                    files=files,
+                    timeout=1,
+                )
+            import ipdb
+
+            ipdb.set_trace()
+            if resp.status_code != 200:
+                print(resp.status_code, resp.content)
+                log_error("Failed to trigger the deploy")
+                sys.exit(1)
 
     def trigger(self, project_name: str, source_url: str):
         with log_task(

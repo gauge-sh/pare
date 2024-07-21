@@ -31,6 +31,8 @@ dependencies = [
     "stdlib-list>=0.10.0; python_version < '3.10'",
     "eval-type-backport>=0.2.0; python_version < '3.10'",
     "boto3~=1.34.145",
+    "requests~=2.32.3",
+
 ]
 keywords = ['python', 'lambda', 'aws', 'serverless', 'fastapi']
 
