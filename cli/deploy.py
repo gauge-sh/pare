@@ -28,6 +28,23 @@ class DeployHandler:
             deploy_name = str(uuid.uuid4())
         self.deploy_name = deploy_name
 
+    def validate_file_paths(self) -> None:
+        root = Path.cwd()
+        errored = False
+        for file_path in self.file_paths:
+            if not Path(file_path).exists():
+                errored = True
+                log_error(f"{file_path} does not exist")
+            if not Path(file_path).is_file():
+                errored = True
+                log_error(f"{file_path} is not a file")
+            if file_path[-3:] != ".py":
+                errored = True
+                print(file_path[-3:])
+                log_error(f"{file_path} is not a python file")
+        if errored:
+            sys.exit(1)
+
     def bundle(self, temp_dir: tempfile.TemporaryDirectory[str]) -> Path:
         with log_task(start_message="Bundling...", end_message="Project bundled"):
             zip_filename = f"{self.deploy_name}.zip"
@@ -35,14 +52,7 @@ class DeployHandler:
 
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
                 for file_path in self.file_paths:
-                    if (
-                        Path(file_path).exists()
-                        and Path(file_path).is_file()
-                        and file_path[:-3] == ".py"
-                    ):
-                        zipf.write(file_path)
-                    else:
-                        log_error(f"{file_path} is not a valid python file")
+                    zipf.write(file_path)
         return zip_path
 
     def upload(self, zip_path: Path) -> str:
@@ -107,10 +117,9 @@ class DeployHandler:
             f"Deploying [bold white]"
             f"[bold green] as [bold white]{self.deploy_name[:8]}[bold green]...",
         )
+        self.validate_file_paths()
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)
             url = self.upload(zip_path)
-            # self.trigger(project_name=self.deploy_name, source_url=url)
-            # self.retrieve()
         console.print(f"[bold white]{self.deploy_name[:8]} [bold green]deployed!")
         console.print(f"[blue]https://{DEMO_URL}")
