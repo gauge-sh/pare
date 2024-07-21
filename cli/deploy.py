@@ -29,7 +29,6 @@ class DeployHandler:
         self.deploy_name = deploy_name
 
     def validate_file_paths(self) -> None:
-        root = Path.cwd()
         errored = False
         for file_path in self.file_paths:
             if not Path(file_path).exists():
