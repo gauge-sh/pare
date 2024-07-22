@@ -17,10 +17,7 @@ API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
 
 class DeployHandler:
-    def __init__(
-        self, bucket_name: str, file_paths: list[str], deploy_name: str = ""
-    ) -> None:
-        self.bucket_name = bucket_name
+    def __init__(self, file_paths: list[str], deploy_name: str = "") -> None:
         self.file_paths = file_paths
         if not deploy_name:
             deploy_name = str(uuid.uuid4())

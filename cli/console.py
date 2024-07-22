@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
 
@@ -7,7 +8,7 @@ from rich.console import Console
 
 
 @contextmanager
-def log_task(start_message: str, end_message: str) -> None:
+def log_task(start_message: str, end_message: str) -> Generator[None, None, None]:
     console = Console()
     with console.status(
         f"      {start_message}", spinner="aesthetic", spinner_style="blue"

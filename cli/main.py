@@ -7,7 +7,7 @@ from cli.deploy import DeployHandler
 
 def deploy(file_path_str: str) -> None:
     file_paths = [path.strip() for path in file_path_str.split(",")]
-    DeployHandler(bucket_name="yee", file_paths=file_paths, deploy_name="test").deploy()
+    DeployHandler(file_paths=file_paths, deploy_name="test").deploy()
 
 
 def status() -> None:
