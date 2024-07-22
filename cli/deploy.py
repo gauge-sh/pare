@@ -33,10 +33,10 @@ class DeployHandler:
             if not Path(file_path).exists():
                 errored = True
                 log_error(f"{file_path} does not exist")
-            if not Path(file_path).is_file():
+            elif not Path(file_path).is_file():
                 errored = True
                 log_error(f"{file_path} is not a file")
-            if file_path[-3:] != ".py":
+            elif file_path[-3:] != ".py":
                 errored = True
                 print(file_path[-3:])
                 log_error(f"{file_path} is not a python file")
