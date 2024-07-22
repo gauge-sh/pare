@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
+import json
 import os
 import sys
 import tempfile
@@ -9,14 +10,21 @@ import uuid
 import zipfile
 from pathlib import Path
 from time import sleep
+from typing import Dict, TypedDict
 
 import requests
-from pydantic import BaseModel
 from rich.console import Console
 
 from cli.console import log_error, log_task
 
 API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
+
+
+class InnerDict(TypedDict):
+    key: str | list[str]
+
+
+DeployConfigType = Dict[str, InnerDict]
 
 
 class DeployHandler:
@@ -51,20 +59,17 @@ class DeployHandler:
                     zipf.write(file_path)
         return zip_path
 
-    def upload(self, zip_path: Path, endpoint_references: dict[str, BaseModel]) -> None:
+    def upload(self, zip_path: Path, deployments: DeployConfigType) -> None:
         gauge_client_id = os.environ.get(
             "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
         )
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
-            data = {"name": self.deploy_name, "endpoints": endpoint_references}
-
-            with open(zip_path, "rb") as f:
-                files = {"zip": f}
+            with open(zip_path, "rb") as zip_file:
+                files = {"file": zip_file, "json_data": (None, json.dumps(deployments))}
                 resp = requests.post(
-                    API_URL,
-                    json=data,
+                    API_URL + "/v0.1/deploy/",
                     headers={"GAUGE_CLIENT_ID": gauge_client_id},
                     files=files,
                     timeout=1,
@@ -95,7 +100,7 @@ class DeployHandler:
                 else:
                     sleep(3)
 
-    def build_references(self) -> dict[str, dict[str, str | list[str]]]:
+    def register_deployments(self) -> DeployConfigType:
         results = {}
         for file_path in self.file_paths:
             module_name = str(file_path).replace(os.path.sep, ".").replace(".py", "")
@@ -129,9 +134,8 @@ class DeployHandler:
             f"[bold green] as [bold white]{self.deploy_name}[bold green]...",
         )
         self.validate_file_paths()
-        endpoint_references = self.build_references()
-        print(endpoint_references)
+        deployments = self.register_deployments()
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)
-            self.upload(zip_path, endpoint_references)
+            self.upload(zip_path, deployments)
         console.print(f"[bold white]{self.deploy_name[:8]} [bold green]deployed!")
