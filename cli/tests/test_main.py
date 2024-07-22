@@ -1,27 +1,26 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
 
 from cli.main import create_parser
 
-
-def test_parser_setup():
-    parser = create_parser()
-    args = parser.parse_args(["setup"])
-    assert args.command == "setup"
+if TYPE_CHECKING:
+    from pytest import CaptureFixture
 
 
 def test_parser_deploy():
     parser = create_parser()
-    args = parser.parse_args(["deploy", "test_file.txt"])
+    args = parser.parse_args(["deploy", "test_file.py"])
     assert args.command == "deploy"
-    assert args.file == "test_file.txt"
+    assert args.file_paths == "test_file.py"
 
 
-def test_parser_deploy_no_file(capsys):
+def test_parser_deploy_no_file(capsys: CaptureFixture[str]):
     parser = create_parser()
     with pytest.raises(SystemExit) as exc:
-        args = parser.parse_args(["deploy"])
+        parser.parse_args(["deploy"])
     assert exc.value.code == 2
 
     captured = capsys.readouterr()
