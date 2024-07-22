@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import tempfile
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated  # type: ignore
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
@@ -30,10 +30,11 @@ UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 
 @router.post("/deploy/")
 async def deploy_zip(
-    file: Annotated[UploadFile, File()], json_data: Annotated[str, Form()]
+    file: Annotated[UploadFile, File()],  # type: ignore
+    json_data: Annotated[str, Form()],  # type: ignore
 ):
     try:
-        deployment_data = json.loads(json_data)
+        deployment_data = json.loads(json_data)  # type: ignore
         deployments: list[DeploymentConfig] = [
             DeploymentConfig(**deployment) for deployment in deployment_data
         ]
@@ -46,7 +47,7 @@ async def deploy_zip(
         tmp_dir = Path(tmp_dir)
         zipfile_path = tmp_dir / UPLOADED_BUNDLE_FILENAME
         try:
-            write_to_zipfile(await file.read(), output_path=zipfile_path)
+            write_to_zipfile(await file.read(), output_path=zipfile_path)  # pyright: ignore
         except ValueError as err:
             return JSONResponse(status_code=400, content={"error": str(err)})
         for deployment in deployments:

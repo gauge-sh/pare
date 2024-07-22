@@ -49,7 +49,7 @@ def deploy_python_lambda_function(
             print(f"Updated existing Lambda function: {function_name}")
 
         except ClientError as e:
-            if e.response["Error"]["Code"] == "ResourceNotFoundException":
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":  # type: ignore
                 # The function doesn't exist, so we create it
                 response = lambda_client.create_function(
                     FunctionName=function_name,

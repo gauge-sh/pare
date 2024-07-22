@@ -10,7 +10,7 @@ import uuid
 import zipfile
 from pathlib import Path
 from time import sleep
-from typing import Dict, TypedDict
+from typing import Dict, Optional, TypedDict
 
 import requests
 from rich.console import Console
@@ -20,15 +20,15 @@ from cli.console import log_error, log_task
 API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
 
-class InnerDict(TypedDict):
-    module: str
+class DeployType(TypedDict):
+    module: Optional[str]
     reference: str
     function: str
     python_version: str
     dependencies: list[str]
 
 
-DeployConfigType = Dict[str, InnerDict]
+DeployConfigType = Dict[str, DeployType]
 
 
 class DeployHandler:
@@ -116,7 +116,7 @@ class DeployHandler:
                 for name, obj in inspect.getmembers(module):
                     if inspect.isfunction(obj) and hasattr(obj, "_gauge_register"):
                         try:
-                            name, config = obj._gauge_register()
+                            name, config = obj._gauge_register()  # type: ignore
                             if name in results:
                                 raise ValueError(f"Duplicate endpoint {name}")
                             results[name] = {
@@ -130,7 +130,7 @@ class DeployHandler:
                             break
             else:
                 print(f"Couldn't load module from {file_path}")
-        return results
+        return results  # type: ignore
 
     def deploy(self):
         console = Console()
