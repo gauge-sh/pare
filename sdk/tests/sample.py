@@ -1,15 +1,13 @@
 from __future__ import annotations
 
-from sdk.config import AWSLambdaConfig
 from sdk.main import endpoint
 
 
-@endpoint()
+@endpoint(name="hello_world")
 def hello_world():
     print("Hello World!")
 
 
-class Hello:
-    @endpoint(config=AWSLambdaConfig(image="python:3.12"))
-    def world(self):
-        print("Hello World!")
+@endpoint(name="test", python_version="3.11")
+def test():
+    pass

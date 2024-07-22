@@ -9,7 +9,6 @@ import uuid
 import zipfile
 from pathlib import Path
 from time import sleep
-from typing import Callable
 
 import requests
 from pydantic import BaseModel
@@ -96,35 +95,29 @@ class DeployHandler:
                 else:
                     sleep(3)
 
-    def build_references(self) -> dict[str, BaseModel]:
+    def build_references(self) -> dict[str, dict[str, str | list[str]]]:
         results = {}
         for file_path in self.file_paths:
-            module_name = str(file_path).replace(os.path.sep, ".")
+            module_name = str(file_path).replace(os.path.sep, ".").replace(".py", "")
             spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
             if spec and spec.loader:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
-
                 for name, obj in inspect.getmembers(module):
-                    if inspect.isfunction(obj):
-                        # Check if this is a decorated function
-                        if hasattr(obj, "__closure__") and obj.__closure__:
-                            for cell in obj.__closure__:
-                                if isinstance(cell.cell_contents, Callable) and hasattr(
-                                    cell.cell_contents, "_gauge_register"
-                                ):
-                                    try:
-                                        function_name, config = (
-                                            cell.cell_contents._gauge_register()
-                                        )
-                                        results[f"{module_name}:{function_name}"] = (
-                                            config
-                                        )
-                                    except Exception as e:
-                                        print(
-                                            f"Error calling _gauge_register on {name}: {e}"
-                                        )
-                                    break
+                    if inspect.isfunction(obj) and hasattr(obj, "_gauge_register"):
+                        try:
+                            name, config = obj._gauge_register()
+                            if name in results:
+                                raise ValueError(f"Duplicate endpoint {name}")
+                            results[name] = {
+                                "module": module_name,
+                                "reference": f"{module_name}:{config['function']}",
+                                **config,
+                            }
+
+                        except Exception as e:
+                            print(f"Error calling _gauge_register on {name}: {e}")
+                            break
             else:
                 print(f"Couldn't load module from {file_path}")
         return results
@@ -137,6 +130,7 @@ class DeployHandler:
         )
         self.validate_file_paths()
         endpoint_references = self.build_references()
+        print(endpoint_references)
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)
             self.upload(zip_path, endpoint_references)
