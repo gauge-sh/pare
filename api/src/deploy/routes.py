@@ -35,8 +35,13 @@ async def deploy_zip(
     try:
         deployment_data = json.loads(json_data)
         deployments: list[DeploymentConfig] = [
-            DeploymentConfig(**deployment)
-            for deployment in deployment_data
+            DeploymentConfig(
+                name=name,
+                path=deployment["reference"],
+                python_version=deployment["python_version"],
+                requirements=deployment["dependencies"]
+            )
+            for name, deployment in deployment_data.items()
         ]
     except Exception:
         raise HTTPException(status_code=422, detail="Couldn't process deployments data.")
