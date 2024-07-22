@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import boto3
 from botocore.exceptions import ClientError
 
 from src import settings
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 LAMBDA_RUNTIMES = ["python3.12", "python3.11", "python3.10", "python3.9", "python3.8"]
 

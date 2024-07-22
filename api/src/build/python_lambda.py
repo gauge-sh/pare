@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import subprocess
 import sys
-from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 PIP_PLATFORM = "manylinux2014_x86_64"
 

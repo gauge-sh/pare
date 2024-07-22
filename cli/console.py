@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from rich.console import Console
 
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 @contextmanager
 def log_task(start_message: str, end_message: str) -> Generator[None, None, None]:
