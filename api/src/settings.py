@@ -14,3 +14,4 @@ DB_NAME = env.str("DB_NAME", "postgres")
 
 
 LAMBDA_ROLE_ARN = env.str("LAMBDA_ROLE_ARN")
+AWS_DEFAULT_REGION = env.str("AWS_DEFAULT_REGION", "us-east-1")

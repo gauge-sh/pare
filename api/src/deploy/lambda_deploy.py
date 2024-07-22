@@ -27,7 +27,7 @@ def deploy_python_lambda_function(
     handler: str = "lambda_function.lambda_handler",
 ):
     # Initialize the Lambda client
-    lambda_client = boto3.client("lambda")
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
     lambda_runtime = translate_python_version_to_lambda_runtime(python_version)
 
     try:
