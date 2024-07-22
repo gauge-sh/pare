@@ -28,9 +28,9 @@ def log_task(start_message: str, end_message: str) -> Generator[None, None, None
 
 def log_error(message: str) -> None:
     console = Console()
-    console.print(f"[bright_red]✗ Bridge Error[/bright_red]: {message}")
+    console.print(f"[bright_red]✗ Error[/bright_red]: {message}")
 
 
 def log_warning(message: str) -> None:
     console = Console()
-    console.print(f"[yellow]Bridge Warning[/yellow]: {message}")
+    console.print(f"[yellow] Warning[/yellow]: {message}")

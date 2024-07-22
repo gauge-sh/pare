@@ -79,7 +79,9 @@ python-dotenv==1.0.1
     #   environs
     #   uvicorn
 python-multipart==0.0.9
-    # via fastapi
+    # via
+    #   -r requirements.in
+    #   fastapi
 pyyaml==6.0.1
     # via uvicorn
 rich==13.7.1

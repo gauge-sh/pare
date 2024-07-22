@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import sys
 import tempfile
@@ -56,15 +57,19 @@ class DeployHandler:
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
-            data = {
-                "name": self.deploy_name,
-            }
-
-            with open(zip_path, "rb") as f:
-                files = {"zip": f}
+            deployments = [{
+                "name": "test",
+                "path": "test",
+                "python_version": "test",
+                "requirements": ["test"]
+            }]
+            with open(zip_path, "rb") as zip_file:
+                files = {
+                    "file": zip_file,
+                    "json_data": (None, json.dumps(deployments))
+                }
                 resp = requests.post(
-                    API_URL,
-                    json=data,
+                    API_URL + "/v0.1/deploy/",
                     headers={"GAUGE_CLIENT_ID": gauge_client_id},
                     files=files,
                     timeout=1,

@@ -1,5 +1,8 @@
+import json
+from pathlib import Path
 import tempfile
-from fastapi import APIRouter, UploadFile
+from typing import Annotated
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -22,8 +25,21 @@ class DeploymentConfig(BaseModel):
 UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 
 @router.post("/deploy/")
-async def deploy_zip(file: UploadFile, deployments: list[DeploymentConfig]):
+async def deploy_zip(
+    file: Annotated[UploadFile, File()],
+    json_data: Annotated[str, Form()]
+):
+    try:
+        deployment_data = json.loads(json_data)
+        deployments: list[DeploymentConfig] = [
+            DeploymentConfig(**deployment)
+            for deployment in deployment_data
+        ]
+    except Exception:
+        raise HTTPException(status_code=422, detail="Couldn't process deployments data.")
+
     with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
         zipfile_path = tmp_dir / UPLOADED_BUNDLE_FILENAME
         try:
             write_to_zipfile(await file.read(), output_path=zipfile_path)

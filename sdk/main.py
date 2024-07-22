@@ -8,4 +8,4 @@ from sdk.config import AWSLambdaConfig
 def endpoint(
     function: Callable[..., Any], config: AWSLambdaConfig = AWSLambdaConfig()
 ) -> Callable[..., Any]:
-    return lambda *args, **kwargs: function(*args, **kwargs)
+    return function
