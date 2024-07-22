@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from fastapi import FastAPI
+
 from src.deploy.routes import router as deploy_router
 
 app = FastAPI()

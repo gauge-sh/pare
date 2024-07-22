@@ -1,16 +1,19 @@
+from __future__ import annotations
+
 import json
-from pathlib import Path
 import tempfile
+from pathlib import Path
 from typing import Annotated
+
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from src.build.python_lambda import install_deps_to_dir
-from src.deploy.lambda_deploy import deploy_python_lambda_function
-from src.transform import build_lambda_handler
 from src.build.zip import write_extended_zipfile, write_to_zipfile
 from src.constants import API_VERSION
+from src.deploy.lambda_deploy import deploy_python_lambda_function
+from src.transform import build_lambda_handler
 
 router = APIRouter(prefix=f"/{API_VERSION}")
 
