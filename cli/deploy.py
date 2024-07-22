@@ -42,7 +42,7 @@ class DeployHandler:
         if errored:
             sys.exit(1)
 
-    def bundle(self, temp_dir: tempfile.TemporaryDirectory[str]) -> Path:
+    def bundle(self, temp_dir: str) -> Path:
         with log_task(start_message="Bundling...", end_message="Project bundled"):
             zip_filename = f"{self.deploy_name}.zip"
             zip_path = Path(temp_dir) / zip_filename
@@ -53,15 +53,15 @@ class DeployHandler:
         return zip_path
 
     def upload(self, zip_path: Path) -> None:
+        gauge_client_id = os.environ.get(
+            "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
+        )
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
             data = {
                 "name": self.deploy_name,
             }
-            gauge_client_id = os.environ.get(
-                "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
-            )
 
             with open(zip_path, "rb") as f:
                 files = {"zip": f}
