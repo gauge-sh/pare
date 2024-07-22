@@ -1,6 +1,6 @@
 [project]
 name = "gauge-serverless"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name="Caelean Barnes", email="caeleanb@gmail.com" },
   { name="Evan Doyle", email="evanmdoyle@gmail.com" },
