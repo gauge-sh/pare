@@ -13,8 +13,7 @@ from rich.console import Console
 
 from cli.console import log_error, log_task
 
-API_URL = "https://deploy.gauge.sh"
-DEMO_URL = "demo.bridge-cli.com"
+API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
 
 class DeployHandler:
@@ -53,16 +52,16 @@ class DeployHandler:
                     zipf.write(file_path)
         return zip_path
 
-    def upload(self, zip_path: Path) -> str:
-        gauge_client_id = os.environ.get(
-            "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
-        )
+    def upload(self, zip_path: Path) -> None:
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
             data = {
-                "name": self.deploy_name[:8],
+                "name": self.deploy_name,
             }
+            gauge_client_id = os.environ.get(
+                "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
+            )
 
             with open(zip_path, "rb") as f:
                 files = {"zip": f}
@@ -73,29 +72,6 @@ class DeployHandler:
                     files=files,
                     timeout=1,
                 )
-            import ipdb
-
-            ipdb.set_trace()
-            if resp.status_code != 200:
-                print(resp.status_code, resp.content)
-                log_error("Failed to trigger the deploy")
-                sys.exit(1)
-
-    def trigger(self, project_name: str, source_url: str):
-        with log_task(
-            start_message="Triggering deploy...", end_message="Deploy triggered"
-        ):
-            data = {
-                "name": self.deploy_name[:8],
-                "project_name": project_name,
-                "source_url": source_url,
-            }
-            gauge_client_id = os.environ.get(
-                "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID")
-            )
-            resp = requests.post(
-                API_URL, json=data, headers={"GAUGE_CLIENT_ID": gauge_client_id}
-            )
             if resp.status_code != 200:
                 print(resp.status_code, resp.content)
                 log_error("Failed to trigger the deploy")
@@ -131,6 +107,5 @@ class DeployHandler:
         self.validate_file_paths()
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)
-            url = self.upload(zip_path)
+            self.upload(zip_path)
         console.print(f"[bold white]{self.deploy_name[:8]} [bold green]deployed!")
-        console.print(f"[blue]https://{DEMO_URL}")
