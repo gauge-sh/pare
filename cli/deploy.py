@@ -21,7 +21,11 @@ API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
 
 class InnerDict(TypedDict):
-    key: str | list[str]
+    module: str
+    reference: str
+    function: str
+    python_version: str
+    dependencies: list[str]
 
 
 DeployConfigType = Dict[str, InnerDict]
