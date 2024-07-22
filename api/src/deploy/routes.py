@@ -56,6 +56,7 @@ async def deploy_zip(
         for deployment in deployments:
             # TODO: validate deployment name
             build_path = tmp_dir / deployment.name
+            build_path.mkdir(parents=True, exist_ok=True)
             build_lambda_handler(symbol_path=deployment.path, output_path=build_path / "lambda_function.py")
             install_deps_to_dir(dependencies=deployment.requirements, python_version=deployment.python_version, output_dir=build_path)
             deployment_package_path = tmp_dir / f"{deployment.name}.zip"
