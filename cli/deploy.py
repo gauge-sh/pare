@@ -60,6 +60,7 @@ class DeployHandler:
         return zip_path
 
     def upload(self, zip_path: Path, deployments: DeployConfigType) -> None:
+        print(deployments)
         gauge_client_id = os.environ.get(
             "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
         )
