@@ -18,7 +18,7 @@ template = Template(template_content)
 def build_lambda_handler(symbol_path: str, output_path: Path):
     try:
         mod_path, target_symbol = symbol_path.split(":")
-    except:
+    except ValueError:  # not enough values to unpack/too many values to unpack
         raise ValueError(
             f"Could not resolve module path and target symbol from: '{symbol_path}'"
         )

@@ -71,6 +71,7 @@ Issues = "https://github.com/gauge-sh/tach/gauge-serverless"
 
 [tool.ruff]
 target-version = "py38"
+exclude = ["**/__pycache__", ".venv", "api/src/transform/template.py"]
 lint.extend-select = ["I", "TCH", "UP"]
 
 [tool.ruff.lint.isort]
@@ -88,7 +89,7 @@ runtime-evaluated-decorators = [
 exempt-modules = ["typing", "typing_extensions"]
 
 [tool.pyright]
-exclude = ["**/__pycache__", ".venv"]
+exclude = ["**/__pycache__", ".venv", "api/src/transform/template.py"]
 strict = ["."]
 pythonVersion = "3.8"
 

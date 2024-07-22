@@ -9,6 +9,7 @@ from rich.console import Console
 if TYPE_CHECKING:
     from collections.abc import Generator
 
+
 @contextmanager
 def log_task(start_message: str, end_message: str) -> Generator[None, None, None]:
     console = Console()
