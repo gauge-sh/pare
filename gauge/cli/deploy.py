@@ -64,7 +64,6 @@ class DeployHandler:
         return zip_path
 
     def upload(self, zip_path: Path, deployments: DeployConfigType) -> None:
-        print(deployments)
         gauge_client_id = os.environ.get("GAUGE_CLIENT_ID") or input(
             "Input your GAUGE_CLIENT_ID: "
         )
@@ -82,27 +81,6 @@ class DeployHandler:
                 print(resp.status_code, resp.content)
                 log_error("Failed to trigger the deploy")
                 sys.exit(1)
-
-    def retrieve(self):
-        with log_task(
-            start_message="Checking deploy status...", end_message="Status updated"
-        ):
-            status = "pending"
-            while status == "pending":
-                resp = requests.get(API_URL)
-                sleep(0.1)
-                if resp.status_code == 200:
-                    deployment_data = resp.json()
-                    for deployment in deployment_data["deployments"]:
-                        if deployment["name"] == self.deploy_name[:8]:
-                            status = deployment["status"]
-                            if status == "error":
-                                log_error(deployment["debug"])
-                            elif status == "deployed":
-                                return deployment.get("deploy_url", "[deployment_url]")
-                            break
-                else:
-                    sleep(3)
 
     def register_deployments(self) -> DeployConfigType:
         results = {}

@@ -35,3 +35,15 @@ def test_custom_endpoint_decorator():
             "function": "test_function",
         },
     )
+
+
+def test_as_lambda_handler():
+    @endpoint(name="name3", dependencies=["fastapi"], python_version="3.13")
+    def test_function():
+        return "test3"
+
+    assert test_function() == "test3"
+    assert hasattr(test_function, "as_lambda_function_url_handler")
+    handler_result = test_function.as_lambda_function_url_handler()({}, {})
+    assert handler_result.get("status") == 200
+    assert handler_result.get("result") == "test3"
