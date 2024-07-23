@@ -15,10 +15,10 @@ AUTH_EXEMPT = ["/healthcheck"]
 
 @app.middleware("http")
 async def auth_check(request: Request, call_next: Any):
-    print(settings.CLIENT_SECRET, request.headers.get("X-Client-Secret"))
+    print(settings.CLIENT_SECRET, request.headers.get("X-Client-Secret"))  # type: ignore
     if (
         request.url.path not in AUTH_EXEMPT
-        and settings.CLIENT_SECRET != request.headers.get("X-Client-Secret")
+        and settings.CLIENT_SECRET != request.headers.get("X-Client-Secret")  # type: ignore
     ):
         return Response(status_code=403)
 
