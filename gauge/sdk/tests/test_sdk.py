@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gauge.sdk.main import endpoint
+from gauge import endpoint
 
 
 def test_default_endpoint_decorator():
