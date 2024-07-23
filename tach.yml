@@ -3,7 +3,8 @@ modules:
   - path: api
     depends_on: []
   - path: gauge
-    depends_on: []
+    depends_on:
+      - gauge.sdk
   - path: gauge.cli
     depends_on: []
   - path: gauge.sdk
@@ -12,8 +13,8 @@ exclude:
   - .*__pycache__
   - .*egg-info
   - api/src/transform/template.py
-  - gauge/cli/tests
   - docs
+  - gauge/cli/tests
   - gauge/sdk/tests
   - venv
 source_root: .
