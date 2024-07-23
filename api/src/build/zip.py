@@ -12,7 +12,7 @@ def write_to_zipfile(content: bytes, output_path: Path) -> None:
         if not is_zipfile(temp_file):
             raise ValueError("The uploaded file is not a valid zip file")
 
-        Path(temp_file.name).rename(output_path)
+        output_path.write_bytes(content)
 
 
 def write_extended_zipfile(

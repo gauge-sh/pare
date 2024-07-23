@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pathlib import Path
+from pathlib import Path
 
 PIP_PLATFORM = "manylinux2014_x86_64"
 
@@ -13,6 +10,7 @@ PIP_PLATFORM = "manylinux2014_x86_64"
 def install_deps_to_dir(
     dependencies: list[str], python_version: str, output_dir: Path
 ) -> None:
+    dependencies.append("gauge-serverless")
     output_dir.mkdir(parents=True, exist_ok=True)
 
     pip_command = [

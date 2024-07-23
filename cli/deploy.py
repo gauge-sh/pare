@@ -65,8 +65,8 @@ class DeployHandler:
 
     def upload(self, zip_path: Path, deployments: DeployConfigType) -> None:
         print(deployments)
-        gauge_client_id = os.environ.get(
-            "GAUGE_CLIENT_ID", input("Input your GAUGE_CLIENT_ID: ")
+        gauge_client_id = os.environ.get("GAUGE_CLIENT_ID") or input(
+            "Input your GAUGE_CLIENT_ID: "
         )
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"

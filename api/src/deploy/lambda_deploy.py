@@ -30,7 +30,7 @@ def deploy_python_lambda_function(
     handler: str = "lambda_function.lambda_handler",
 ):
     # Initialize the Lambda client
-    lambda_client = boto3.client("lambda")
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
     lambda_runtime = translate_python_version_to_lambda_runtime(python_version)
 
     try:
@@ -54,7 +54,7 @@ def deploy_python_lambda_function(
                 response = lambda_client.create_function(
                     FunctionName=function_name,
                     Runtime=lambda_runtime,
-                    Role=settings.LAMBDA_ROLE_ARN,
+                    Role=settings.LAMBDA_ROLE_ARN,  # type: ignore
                     Handler=handler,
                     Code=dict(ZipFile=bytes_content),
                 )

@@ -36,7 +36,13 @@ async def deploy_zip(
     try:
         deployment_data = json.loads(json_data)  # type: ignore
         deployments: list[DeploymentConfig] = [
-            DeploymentConfig(**deployment) for deployment in deployment_data
+            DeploymentConfig(
+                name=name,
+                path=deployment["reference"],
+                python_version=deployment["python_version"],
+                requirements=deployment["dependencies"],
+            )
+            for name, deployment in deployment_data.items()
         ]
     except Exception:
         raise HTTPException(
@@ -47,12 +53,13 @@ async def deploy_zip(
         tmp_dir = Path(tmp_dir)
         zipfile_path = tmp_dir / UPLOADED_BUNDLE_FILENAME
         try:
-            write_to_zipfile(await file.read(), output_path=zipfile_path)  # pyright: ignore
+            write_to_zipfile(await file.read(), output_path=zipfile_path)  # type: ignore
         except ValueError as err:
             return JSONResponse(status_code=400, content={"error": str(err)})
         for deployment in deployments:
             # TODO: validate deployment name
             build_path = tmp_dir / deployment.name
+            build_path.mkdir(parents=True, exist_ok=True)
             build_lambda_handler(
                 symbol_path=deployment.path,
                 output_path=build_path / "lambda_function.py",
