@@ -10,7 +10,7 @@ import uuid
 import zipfile
 from pathlib import Path
 from time import sleep
-from typing import Dict, Optional, TypedDict
+from typing import Dict, TypedDict
 
 import requests
 from rich.console import Console
@@ -21,7 +21,7 @@ API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
 
 class DeployType(TypedDict):
-    module: Optional[str]
+    module: str | None
     reference: str
     function: str
     python_version: str

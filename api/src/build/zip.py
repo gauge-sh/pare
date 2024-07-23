@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import tempfile
-from pathlib import Path
+from typing import TYPE_CHECKING
 from zipfile import ZipFile, is_zipfile
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 def write_to_zipfile(content: bytes, output_path: Path) -> None:
