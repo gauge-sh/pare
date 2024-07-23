@@ -10,17 +10,15 @@ from gauge.cli.deploy import DeployHandler
 
 @pytest.fixture
 def deploy_handler() -> DeployHandler:
-    return DeployHandler(["test_file.py"], "test_deploy")
+    return DeployHandler(["test_file.py"])
 
 
 def test_init() -> None:
-    handler = DeployHandler(["file1.py", "file2.py"], "test_deploy")
+    handler = DeployHandler(["file1.py", "file2.py"])
     assert len(handler.file_paths) == 2
-    assert handler.deploy_name == "test_deploy"
 
-    handler_no_name = DeployHandler(["file1.py"])
-    assert len(handler_no_name.file_paths) == 1
-    assert len(handler_no_name.deploy_name) == 36  # UUID4 length
+    other_handler = DeployHandler(["file1.py"])
+    assert len(other_handler.file_paths) == 1
 
 
 def test_validate_file_paths(deploy_handler: DeployHandler) -> None:
@@ -48,7 +46,7 @@ def test_bundle(deploy_handler: DeployHandler) -> None:
     with patch("zipfile.ZipFile") as mock_zipfile:
         result = deploy_handler.bundle("/tmp")
         assert isinstance(result, Path)
-        assert result.name == f"{deploy_handler.deploy_name}.zip"
+        assert result.name.endswith(".zip")
         mock_zipfile.assert_called_once()
 
 

@@ -6,7 +6,6 @@ import json
 import os
 import sys
 import tempfile
-import uuid
 import zipfile
 from pathlib import Path
 from typing import Dict, TypedDict
@@ -31,11 +30,8 @@ DeployConfigType = Dict[str, DeployType]
 
 
 class DeployHandler:
-    def __init__(self, file_paths: list[str], deploy_name: str = "") -> None:
+    def __init__(self, file_paths: list[str]) -> None:
         self.file_paths = {Path(file_path) for file_path in file_paths}
-        if not deploy_name:
-            deploy_name = str(uuid.uuid4())
-        self.deploy_name = deploy_name
 
     def validate_file_paths(self) -> None:
         errored = False
@@ -54,7 +50,7 @@ class DeployHandler:
 
     def bundle(self, temp_dir: str) -> Path:
         with log_task(start_message="Bundling...", end_message="Project bundled"):
-            zip_filename = f"{self.deploy_name}.zip"
+            zip_filename = "gauge_project_bundle.zip"
             zip_path = Path(temp_dir) / zip_filename
 
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -111,12 +107,11 @@ class DeployHandler:
     def deploy(self):
         console = Console()
         console.print(
-            f"Deploying [bold white]"
-            f"[bold green] as [bold white]{self.deploy_name}[bold green]...",
+            f"[bold white]Deploying...[/bold white]",
         )
         self.validate_file_paths()
         deployments = self.register_deployments()
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)
             self.upload(zip_path, deployments)
-        console.print(f"[bold white]{self.deploy_name[:8]} [bold green]deployed!")
+        console.print("[bold green]Deployed![/bold green]")
