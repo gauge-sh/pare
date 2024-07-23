@@ -13,6 +13,7 @@ fi
 
 cd $REPO_NAME
 
+git checkout .  # wipe away requirements.txt or other changes
 git fetch --all
 git checkout $BRANCH
 git pull origin $BRANCH
