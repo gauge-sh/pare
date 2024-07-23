@@ -75,7 +75,7 @@ class DeployHandler:
                 files = {"file": zip_file, "json_data": (None, json.dumps(deployments))}
                 resp = requests.post(
                     API_URL + "/v0.1/deploy/",
-                    headers={"GAUGE_CLIENT_ID": gauge_client_id},
+                    headers={"X-Client-Secret": gauge_client_id},
                     files=files,
                 )
             if resp.status_code != 200:

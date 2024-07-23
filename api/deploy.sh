@@ -32,5 +32,14 @@ if pgrep gunicorn; then
   pkill gunicorn
 fi
 
-nohup gunicorn -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 src.app:app > gunicorn.log 2>&1 &
+nohup gunicorn \
+  -k uvicorn.workers.UvicornWorker \
+  -b 0.0.0.0:8000 \
+  --log-file gunicorn.log \
+  --log-level DEBUG \
+  --capture-output \
+  --access-logfile gunicorn.log \
+  --error-logfile gunicorn.log \
+  --enable-stdio-inheritance \
+  src.app:app &
 echo "Deployment completed."
