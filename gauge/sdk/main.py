@@ -1,12 +1,12 @@
 from __future__ import annotations
-from dataclasses import dataclass, field, asdict
+
 import json
+from dataclasses import asdict, dataclass, field
+from typing import Any, Callable
 
 import requests
 
-from typing import Any, Callable
-
-from gauge import settings, errors
+from gauge import errors, settings
 
 
 @dataclass
@@ -20,15 +20,18 @@ def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) ->
         response = requests.post(
             f"{settings.GAUGE_API_URL}/invoke/{function_name}/",
             headers={"X-Client-Secret": settings.CLIENT_SECRET},
-            json=json.dumps(asdict(arguments))
+            json=json.dumps(asdict(arguments)),
         )
         response.raise_for_status()
         return response.json()
     except requests.HTTPError as e:
-        raise errors.GaugeInvokeError(f"Function invocation for '{function_name}' failed with status: {e.response.status_code}")
+        raise errors.GaugeInvokeError(
+            f"Function invocation for '{function_name}' failed with status: {e.response.status_code}"
+        )
     except Exception as e:
-        raise errors.GaugeInvokeError(f"Could not invoke function: '{function_name}' due to error:\n{e}")
-
+        raise errors.GaugeInvokeError(
+            f"Could not invoke function: '{function_name}' due to error:\n{e}"
+        )
 
 
 def endpoint(
@@ -54,7 +57,10 @@ def endpoint(
                         "detail": "Could not parse incoming data. The request body must be JSON.",
                     }
                 try:
-                    return {"status": 200, "result": function(*event["args"], **event["kwargs"])}
+                    return {
+                        "status": 200,
+                        "result": function(*event["args"], **event["kwargs"]),
+                    }
                 except Exception as e:
                     return {"status": 500, "detail": str(e)}
 
@@ -63,9 +69,12 @@ def endpoint(
         function.as_lambda_function_url_handler = _as_lambda_handler  # pyright: ignore[reportFunctionMemberAccess]
 
         def _invoke_fn(*args, **kwargs) -> Callable[..., Any]:  # type: ignore
-            return invoke_endpoint(name, RemoteInvocationArguments(args=args, kwargs=kwargs))  # type: ignore
+            return invoke_endpoint(
+                name,
+                RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
+            )
 
-        function.invoke = _invoke_fn    # pyright: ignore[reportFunctionMemberAccess]
+        function.invoke = _invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
 
         return function
 

@@ -30,11 +30,11 @@ DeployConfigType = Dict[str, DeployType]
 
 class DeployHandler:
     def __init__(
-            self,
-            file_paths: list[str],
-            api_url: str | None = None,
-            client_secret: str | None = None
-        ) -> None:
+        self,
+        file_paths: list[str],
+        api_url: str | None = None,
+        client_secret: str | None = None,
+    ) -> None:
         self.file_paths = {Path(file_path) for file_path in file_paths}
         self.deploy_url = (api_url or settings.GAUGE_API_URL) + "/deploy"
         self.client_secret = client_secret or settings.CLIENT_SECRET
@@ -113,7 +113,7 @@ class DeployHandler:
     def deploy(self):
         console = Console()
         console.print(
-            f"[bold white]Deploying...[/bold white]",
+            "[bold white]Deploying...[/bold white]",
         )
         self.validate_file_paths()
         deployments = self.register_deployments()
