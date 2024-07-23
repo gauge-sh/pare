@@ -6,6 +6,7 @@ from environs import Env
 env = Env()
 env.read_env()
 
+DEBUG = env.bool("DEBUG", False)
 
 DB_USER = env.str("DB_USER", "postgres")
 DB_PASSWORD = env.str("DB_PASSWORD")
