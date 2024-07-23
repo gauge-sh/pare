@@ -1,6 +1,6 @@
 [project]
 name = "gauge-serverless"
-version = "0.0.4"
+version = "0.0.5"
 authors = [
   { name="Caelean Barnes", email="caeleanb@gmail.com" },
   { name="Evan Doyle", email="evanmdoyle@gmail.com" },
@@ -108,6 +108,6 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 
-[tool.setuptools]
-packages = ["gauge"]
-#include = ["README.md", "LICENSE"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gauge*"]
