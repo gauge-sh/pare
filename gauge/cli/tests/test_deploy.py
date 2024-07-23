@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cli.deploy import DeployHandler
+from gauge.cli.deploy import DeployHandler
 
 
 @pytest.fixture

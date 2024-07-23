@@ -94,7 +94,7 @@ strict = ["."]
 pythonVersion = "3.8"
 
 [project.scripts]
-gauge = "cli.main:main"
+gauge = "gauge.cli.main:main"
 
 [build-system]
 requires = ["setuptools", "wheel"]
@@ -102,5 +102,5 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.setuptools]
-packages = ["cli", "sdk"]
+packages = ["gauge"]
 #include = ["README.md", "LICENSE"]
