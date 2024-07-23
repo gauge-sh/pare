@@ -1,13 +1,20 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/gauge-sh/tach/v0.8.1/public/tach-yml-schema.json
 modules:
-  - path: cli
+  - path: api
     depends_on: []
-  - path: sdk
+  - path: gauge
+    depends_on:
+      - gauge.sdk
+  - path: gauge.cli
+    depends_on: []
+  - path: gauge.sdk
     depends_on: []
 exclude:
   - .*__pycache__
   - .*egg-info
+  - api/src/transform/template.py
   - docs
-  - tests
+  - gauge/cli/tests
+  - gauge/sdk/tests
   - venv
 source_root: .

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 
-from cli.deploy import DeployHandler
+from gauge.cli.deploy import DeployHandler
 
 
 def deploy(file_path_str: str) -> None:

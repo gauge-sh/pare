@@ -15,20 +15,20 @@ from typing import Dict, TypedDict
 import requests
 from rich.console import Console
 
-from cli.console import log_error, log_task
+from gauge.cli.console import log_error, log_task
 
 API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
 
-class InnerDict(TypedDict):
-    module: str
+class DeployType(TypedDict):
+    module: str | None
     reference: str
     function: str
     python_version: str
     dependencies: list[str]
 
 
-DeployConfigType = Dict[str, InnerDict]
+DeployConfigType = Dict[str, DeployType]
 
 
 class DeployHandler:
@@ -65,9 +65,9 @@ class DeployHandler:
 
     def upload(self, zip_path: Path, deployments: DeployConfigType) -> None:
         print(deployments)
-        gauge_client_id = os.environ.get(
-            "GAUGE_CLIENT_ID"
-        ) or input("Input your GAUGE_CLIENT_ID: ")
+        gauge_client_id = os.environ.get("GAUGE_CLIENT_ID") or input(
+            "Input your GAUGE_CLIENT_ID: "
+        )
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
@@ -115,7 +115,7 @@ class DeployHandler:
                 for name, obj in inspect.getmembers(module):
                     if inspect.isfunction(obj) and hasattr(obj, "_gauge_register"):
                         try:
-                            name, config = obj._gauge_register()
+                            name, config = obj._gauge_register()  # type: ignore
                             if name in results:
                                 raise ValueError(f"Duplicate endpoint {name}")
                             results[name] = {
@@ -129,7 +129,7 @@ class DeployHandler:
                             break
             else:
                 print(f"Couldn't load module from {file_path}")
-        return results
+        return results  # type: ignore
 
     def deploy(self):
         console = Console()

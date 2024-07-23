@@ -1,7 +1,8 @@
 from __future__ import annotations
+
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, Request, Response
 
 from src import settings
 from src.deploy.routes import router as deploy_router
@@ -14,10 +15,10 @@ AUTH_EXEMPT = ["/healthcheck"]
 
 @app.middleware("http")
 async def auth_check(request: Request, call_next: Any):
-    print(settings.CLIENT_SECRET, request.headers.get("X-Client-Secret"))
+    print(settings.CLIENT_SECRET, request.headers.get("X-Client-Secret"))  # type: ignore
     if (
         request.url.path not in AUTH_EXEMPT
-        and settings.CLIENT_SECRET != request.headers.get("X-Client-Secret")
+        and settings.CLIENT_SECRET != request.headers.get("X-Client-Secret")  # type: ignore
     ):
         return Response(status_code=403)
 
@@ -27,5 +28,6 @@ async def auth_check(request: Request, call_next: Any):
 @app.get("/healthcheck")
 def healthcheck():
     return {"ok": True}
+
 
 app.include_router(deploy_router)
