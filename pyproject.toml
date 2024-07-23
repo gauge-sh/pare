@@ -30,20 +30,17 @@ dependencies = [
     "pydantic~=2.0",
     "stdlib-list>=0.10.0; python_version < '3.10'",
     "eval-type-backport>=0.2.0; python_version < '3.10'",
-    "boto3~=1.34.145",
     "requests~=2.32.3",
-
+    "environs~=11.0",
 ]
 keywords = ['python', 'lambda', 'aws', 'serverless', 'fastapi']
 [project.optional-dependencies]
 dev = [
     # Core deps (pinned)
     "pyyaml==6.0.1",
-    "pydantic==2.8.2; python_version > '3.7'",
+    "pydantic==2.8.2",
     "rich==13.7.1",
     "fastapi==0.111.1",
-    "boto3-stubs-lite==1.34.145",
-    "boto3-stubs==1.34.145",
     "tach==0.8.1",
     # Setup
     "pip==24.0",
@@ -51,24 +48,13 @@ dev = [
     "pyright==1.1.372",
     "ruff==0.5.2",
     # Build/Release
-    "setuptools==69.5.1; python_version > '3.7'",
-    "twine==5.1.1; python_version > '3.7'",
-    "build==1.2.1; python_version > '3.7'",
+    "setuptools==69.5.1",
+    "twine==5.1.1",
+    "build==1.2.1",
     # Tests
-    "pytest==8.2.2; python_version > '3.7'",
-    "pytest-mock==3.14.0; python_version > '3.7'",
-    "coverage==7.6.0; python_version > '3.7'",
-    # python version 3.7 pinned dependencies
-    "botocore==1.33.13; python_version == '3.7'",
-    "boto3-stubs-lite==1.33.13; python_version == '3.7'",
-    "boto3-stubs==1.33.13; python_version == '3.7'",
-    "pydantic==2.5.3; python_version == '3.7'",
-    "setuptools==47.1.0; python_version == '3.7'",
-    "twine==4.0.2; python_version == '3.7'",
-    "build==1.1.1; python_version == '3.7'",
-    "pytest==7.4.4; python_version == '3.7'",
-    "pytest-mock==3.11.1; python_version == '3.7'",
-    "coverage==7.2.7; python_version == '3.7'",
+    "pytest==8.2.2",
+    "pytest-mock==3.14.0",
+    "coverage==7.6.0",
 ]
 
 

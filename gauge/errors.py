@@ -1,0 +1,6 @@
+class GaugeError(Exception):
+    ...
+
+
+class GaugeInvokeError(GaugeError):
+    ...
