@@ -2,12 +2,30 @@ from __future__ import annotations
 
 import argparse
 
+from rich.console import Console
+
+from gauge.cli.delete import delete_function
 from gauge.cli.deploy import DeployHandler
 
 
 def deploy(file_path_str: str) -> None:
     file_paths = [path.strip() for path in file_path_str.split(",")]
     DeployHandler(file_paths=file_paths).deploy()
+
+
+def delete(function_name: str) -> None:
+    console = Console()
+    if (
+        console.input(
+            f"You are about to delete your deployed function called [bold red]'{function_name}'[/bold red]. "
+            "Type the function name to confirm: "
+        )
+        == function_name
+    ):
+        delete_function(function_name)
+        console.print(f"[bold red]'{function_name}' deleted.[/bold red]")
+    else:
+        console.print("[bold white]Operation cancelled.[/bold white]")
 
 
 def status() -> None:
@@ -31,6 +49,11 @@ def create_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("status", help="Check the status of the application.")
 
+    parser_delete = subparsers.add_parser("delete", help="Delete a deployed function.")
+    parser_delete.add_argument(
+        "function_name", type=str, help="The name of the function to delete."
+    )
+
     return parser
 
 
@@ -41,6 +64,8 @@ def main() -> None:
         deploy(args.file_paths)
     elif args.command == "status":
         status()
+    elif args.command == "delete":
+        delete(args.function_name)
     else:
         print("Unknown command")
         parser.print_help()
