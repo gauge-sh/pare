@@ -42,5 +42,6 @@ nohup gunicorn \
   --access-logfile gunicorn.log \
   --error-logfile gunicorn.log \
   --enable-stdio-inheritance \
+  --timeout 90 \
   src.app:app &
 echo "Deployment completed."
