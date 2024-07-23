@@ -32,7 +32,7 @@ jobs:
         ruff format --check
     - name: Test with pytest and report coverage
       run: |
-        coverage run --branch --source=python -m pytest
+        coverage run --branch -m pytest
         coverage report
     - name: Check types with pyright
       run: |
