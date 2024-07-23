@@ -9,7 +9,6 @@ import tempfile
 import uuid
 import zipfile
 from pathlib import Path
-from time import sleep
 from typing import Dict, TypedDict
 
 import requests
