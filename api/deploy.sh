@@ -25,7 +25,7 @@ fi
 source $VENV_DIR/bin/activate
 pip install --upgrade pip pip-tools uv
 pip-compile $API_DIR/requirements.in -o $API_DIR/requirements.txt
-pip install -r $API_DIR/requirements.txt
+uv pip install -r $API_DIR/requirements.txt
 
 cd $API_DIR
 
