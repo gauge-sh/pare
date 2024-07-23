@@ -56,10 +56,17 @@ def endpoint(
                         "status": 400,
                         "detail": "Could not parse incoming data. The request body must be JSON.",
                     }
+                if "args" not in event and "kwargs" not in event:
+                    return {
+                        "status": 400,
+                        "detail": "Incoming JSON should contain 'args' or 'kwargs' to invoke the function.",
+                    }
                 try:
                     return {
                         "status": 200,
-                        "result": function(*event["args"], **event["kwargs"]),
+                        "result": function(
+                            *event.get("args", []), **event.get("kwargs", {})
+                        ),  # type: ignore
                     }
                 except Exception as e:
                     return {"status": 500, "detail": str(e)}

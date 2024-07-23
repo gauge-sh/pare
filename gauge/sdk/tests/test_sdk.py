@@ -45,5 +45,8 @@ def test_as_lambda_handler():
     assert test_function() == "test3"
     assert hasattr(test_function, "as_lambda_function_url_handler")
     handler_result = test_function.as_lambda_function_url_handler()({}, {})
+    assert handler_result.get("status") == 400
+
+    handler_result = test_function.as_lambda_function_url_handler()({"args": []}, {})
     assert handler_result.get("status") == 200
     assert handler_result.get("result") == "test3"
