@@ -32,7 +32,6 @@ def install_deps_to_dir(
         "--target",
         str(output_dir),
         "--upgrade",
-        "--no-deps",
     ]
     pip_command.extend(dependencies)
 

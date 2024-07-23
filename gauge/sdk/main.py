@@ -65,8 +65,9 @@ def endpoint(
                     return {
                         "status": 200,
                         "result": function(
-                            *event.get("args", []), **event.get("kwargs", {})
-                        ),  # type: ignore
+                            *event.get("args", []),  # type: ignore
+                            **event.get("kwargs", {}),  # type: ignore
+                        ),
                     }
                 except Exception as e:
                     return {"status": 500, "detail": str(e)}
