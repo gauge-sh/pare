@@ -40,10 +40,10 @@ def deploy_python_lambda_function(
 
         try:
             # Try to get the function configuration
-            lambda_client.get_function(FunctionName=function_name)
+            lambda_client.get_function(FunctionName=function_name)  # type: ignore
 
             # If we reach here, the function exists, so we update it
-            response = lambda_client.update_function_code(
+            response = lambda_client.update_function_code(  # type: ignore
                 FunctionName=function_name, ZipFile=bytes_content
             )
             print(f"Updated existing Lambda function: {function_name}")
@@ -51,7 +51,7 @@ def deploy_python_lambda_function(
         except ClientError as e:
             if e.response["Error"]["Code"] == "ResourceNotFoundException":  # type: ignore
                 # The function doesn't exist, so we create it
-                response = lambda_client.create_function(
+                response = lambda_client.create_function(  # type: ignore
                     FunctionName=function_name,
                     Runtime=lambda_runtime,
                     Role=settings.LAMBDA_ROLE_ARN,  # type: ignore
