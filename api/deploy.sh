@@ -23,7 +23,7 @@ if [ ! -d "$VENV_DIR" ]; then
 fi
 
 source $VENV_DIR/bin/activate
-pip install --upgrade pip pip-tools
+pip install --upgrade pip pip-tools uv
 pip-compile $API_DIR/requirements.in -o $API_DIR/requirements.txt
 pip install -r $API_DIR/requirements.txt
 
