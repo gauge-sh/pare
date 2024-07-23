@@ -77,7 +77,6 @@ class DeployHandler:
                     API_URL + "/v0.1/deploy/",
                     headers={"GAUGE_CLIENT_ID": gauge_client_id},
                     files=files,
-                    timeout=1,
                 )
             if resp.status_code != 200:
                 print(resp.status_code, resp.content)
