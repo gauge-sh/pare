@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from pathlib import Path
 
-PIP_PLATFORM = "manylinux2014_x86_64"
+PIP_PLATFORM = "x86_64-manylinux_2_31"
 
 
 def install_deps_to_dir(
