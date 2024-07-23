@@ -16,3 +16,12 @@ deploy:
 		chmod +x deploy.sh && \
 		./deploy.sh $(REPO_NAME) $(REPO_URL) $(BRANCH) $(VENV_DIR) $(API_DIR) \
 	'
+
+
+.PHONY: logs
+logs:
+	@echo "Trailing logs..."
+	ssh -i $(EC2_KEY_LOCATION) $(EC2_USER)@$(EC2_HOST) '\
+		cd $(REPO_NAME)/$(API_DIR) && \
+		tail -f gunicorn.log \
+	'
