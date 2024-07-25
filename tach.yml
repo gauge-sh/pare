@@ -1,7 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/gauge-sh/tach/v0.8.1/public/tach-yml-schema.json
 modules:
-  - path: api
-    depends_on: []
   - path: pare
     depends_on:
       - pare.sdk

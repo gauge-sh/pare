@@ -25,11 +25,11 @@ def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) ->
         response.raise_for_status()
         return response.json()
     except requests.HTTPError as e:
-        raise errors.GaugeInvokeError(
+        raise errors.PareInvokeError(
             f"Function invocation for '{function_name}' failed with status: {e.response.status_code}"
         )
     except Exception as e:
-        raise errors.GaugeInvokeError(
+        raise errors.PareInvokeError(
             f"Could not invoke function: '{function_name}' due to error:\n{e}"
         )
 
