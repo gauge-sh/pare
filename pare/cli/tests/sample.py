@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gauge.sdk.main import endpoint
+from pare.sdk.main import endpoint
 
 
 @endpoint(name="name1")

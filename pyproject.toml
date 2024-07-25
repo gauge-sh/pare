@@ -73,8 +73,8 @@ dev = [
 
 
 [project.urls]
-Homepage = "https://github.com/gauge-sh/gauge-serverless"
-Issues = "https://github.com/gauge-sh/tach/gauge-serverless"
+Homepage = "https://github.com/gauge-sh/pare"
+Issues = "https://github.com/gauge-sh/pare/issues"
 
 [tool.ruff]
 target-version = "py38"
@@ -101,7 +101,7 @@ strict = ["."]
 pythonVersion = "3.8"
 
 [project.scripts]
-gauge = "gauge.cli.main:main"
+pare = "pare.cli.main:main"
 
 [build-system]
 requires = ["setuptools", "wheel"]

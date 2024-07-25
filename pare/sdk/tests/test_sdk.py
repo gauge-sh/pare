@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gauge import endpoint
+from pare import endpoint
 
 
 def test_default_endpoint_decorator():

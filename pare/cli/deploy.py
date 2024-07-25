@@ -15,7 +15,7 @@ from typing import Dict, TypedDict
 import requests
 from rich.console import Console
 
-from gauge.cli.console import log_error, log_task
+from pare.cli.console import log_error, log_task
 
 API_URL = os.environ.get("GAUGE_API_URL", "http://localhost:8000")
 
