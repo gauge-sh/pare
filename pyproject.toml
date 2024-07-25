@@ -30,7 +30,8 @@ dependencies = [
     "pydantic~=2.0",
     "stdlib-list>=0.10.0; python_version < '3.10'",
     "eval-type-backport>=0.2.0; python_version < '3.10'",
-    "requests~=2.32.3",
+    "requests~=2.32",
+    "aiohttp~=3.9",
     "environs~=11.0",
 ]
 keywords = ['python', 'lambda', 'aws', 'serverless', 'fastapi']

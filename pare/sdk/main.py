@@ -4,6 +4,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable
 
+import aiohttp
 import requests
 
 from pare import errors, settings
@@ -32,6 +33,28 @@ def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) ->
         raise errors.PareInvokeError(
             f"Could not invoke function: '{function_name}' due to error:\n{e}"
         )
+
+
+async def async_invoke_endpoint(
+    function_name: str, arguments: RemoteInvocationArguments
+) -> Any:
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.post(
+                f"{settings.PARE_API_URL}/invoke/{function_name}/",
+                headers={"X-Client-Secret": settings.CLIENT_SECRET},
+                json=json.dumps(asdict(arguments)),
+            ) as response:
+                response.raise_for_status()
+                return await response.json()
+        except aiohttp.ClientResponseError as e:
+            raise errors.PareInvokeError(
+                f"Function invocation for '{function_name}' failed with status: {e.status}"
+            )
+        except Exception as e:
+            raise errors.PareInvokeError(
+                f"Could not invoke function: '{function_name}' due to error:\n{e}"
+            )
 
 
 def endpoint(
@@ -83,6 +106,14 @@ def endpoint(
             )
 
         function.invoke = _invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
+
+        async def _async_invoke_fn(*args, **kwargs) -> Callable[..., Any]:  # type: ignore
+            return await async_invoke_endpoint(
+                name,
+                RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
+            )
+
+        function.invoke_async = _async_invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
 
         return function
 
