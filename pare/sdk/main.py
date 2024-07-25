@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 import requests
 
-from gauge import errors, settings
+from pare import errors, settings
 
 
 @dataclass
@@ -18,7 +18,7 @@ class RemoteInvocationArguments:
 def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) -> Any:
     try:
         response = requests.post(
-            f"{settings.GAUGE_API_URL}/invoke/{function_name}/",
+            f"{settings.PARE_API_URL}/invoke/{function_name}/",
             headers={"X-Client-Secret": settings.CLIENT_SECRET},
             json=json.dumps(asdict(arguments)),
         )
@@ -40,14 +40,14 @@ def endpoint(
     def endpoint_decorator(
         function: Callable[..., Any],
     ) -> Callable[..., Any]:
-        def _gauge_register() -> tuple[str, dict[str, str | list[str]]]:
+        def _pare_register() -> tuple[str, dict[str, str | list[str]]]:
             return name, {
                 "function": function.__name__,
                 "python_version": python_version,
                 "dependencies": dependencies,
             }
 
-        function._gauge_register = _gauge_register  # pyright: ignore[reportFunctionMemberAccess]
+        function._pare_register = _pare_register  # pyright: ignore[reportFunctionMemberAccess]
 
         def _as_lambda_handler() -> Callable[[Any, Any], Any]:
             def _lambda_handler(event: Any, context: Any) -> Any:

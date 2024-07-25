@@ -4,8 +4,8 @@ import argparse
 
 from rich.console import Console
 
-from gauge.cli.delete import delete_function
-from gauge.cli.deploy import DeployHandler
+from pare.cli.delete import delete_function
+from pare.cli.deploy import DeployHandler
 
 
 def deploy(file_path_str: str) -> None:

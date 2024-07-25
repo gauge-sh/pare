@@ -2,19 +2,26 @@
 modules:
   - path: api
     depends_on: []
-  - path: gauge
+  - path: pare
     depends_on:
-      - gauge.sdk
-  - path: gauge.cli
+      - pare.sdk
+  - path: pare.cli
+    depends_on:
+      - pare.settings
+  - path: pare.errors
     depends_on: []
-  - path: gauge.sdk
+  - path: pare.sdk
+    depends_on:
+      - pare.errors
+      - pare.settings
+  - path: pare.settings
     depends_on: []
 exclude:
   - .*__pycache__
   - .*egg-info
   - api/src/transform/template.py
   - docs
-  - gauge/cli/tests
-  - gauge/sdk/tests
+  - pare/cli/tests
+  - pare/sdk/tests
   - venv
 source_root: .
