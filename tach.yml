@@ -6,8 +6,15 @@ modules:
     depends_on:
       - pare.sdk
   - path: pare.cli
+    depends_on:
+      - pare.settings
+  - path: pare.errors
     depends_on: []
   - path: pare.sdk
+    depends_on:
+      - pare.errors
+      - pare.settings
+  - path: pare.settings
     depends_on: []
 exclude:
   - .*__pycache__
