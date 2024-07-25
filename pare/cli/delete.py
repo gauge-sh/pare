@@ -4,8 +4,8 @@ import sys
 
 import requests
 
-from gauge import settings
-from gauge.cli.console import log_error
+from pare import settings
+from pare.cli.console import log_error
 
 
 def delete_function(function_name: str) -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gauge import endpoint
+from pare import endpoint
 
 
 def test_default_endpoint_decorator():
@@ -9,8 +9,8 @@ def test_default_endpoint_decorator():
         return "testy"
 
     assert test_function() == "testy"
-    assert hasattr(test_function, "_gauge_register")
-    assert test_function._gauge_register() == (
+    assert hasattr(test_function, "_pare_register")
+    assert test_function._pare_register() == (
         "name",
         {
             "dependencies": [],
@@ -26,8 +26,8 @@ def test_custom_endpoint_decorator():
         return "test2"
 
     assert test_function() == "test2"
-    assert hasattr(test_function, "_gauge_register")
-    assert test_function._gauge_register() == (
+    assert hasattr(test_function, "_pare_register")
+    assert test_function._pare_register() == (
         "name2",
         {
             "dependencies": ["fastapi"],

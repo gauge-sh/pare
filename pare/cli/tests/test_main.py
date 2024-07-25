@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from gauge.cli.main import create_parser
+from pare.cli.main import create_parser
 
 if TYPE_CHECKING:
     from pytest import CaptureFixture

@@ -13,8 +13,8 @@ from typing import Dict, TypedDict
 import requests
 from rich.console import Console
 
-from gauge import settings
-from gauge.cli.console import log_error, log_task
+from pare import settings
+from pare.cli.console import log_error, log_task
 
 
 class DeployType(TypedDict):
@@ -60,7 +60,7 @@ class DeployHandler:
 
     def bundle(self, temp_dir: str) -> Path:
         with log_task(start_message="Bundling...", end_message="Project bundled"):
-            zip_filename = "gauge_project_bundle.zip"
+            zip_filename = "pare_project_bundle.zip"
             zip_path = Path(temp_dir) / zip_filename
 
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
@@ -92,9 +92,9 @@ class DeployHandler:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
                 for name, obj in inspect.getmembers(module):
-                    if inspect.isfunction(obj) and hasattr(obj, "_gauge_register"):
+                    if inspect.isfunction(obj) and hasattr(obj, "_pare_register"):
                         try:
-                            name, config = obj._gauge_register()  # type: ignore
+                            name, config = obj._pare_register()  # type: ignore
                             if name in results:
                                 raise ValueError(f"Duplicate endpoint {name}")
                             results[name] = {
@@ -104,7 +104,7 @@ class DeployHandler:
                             }
 
                         except Exception as e:
-                            print(f"Error calling _gauge_register on {name}: {e}")
+                            print(f"Error calling _pare_register on {name}: {e}")
                             break
             else:
                 print(f"Couldn't load module from {file_path}")
