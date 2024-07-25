@@ -36,7 +36,7 @@ class DeployHandler:
         client_secret: str | None = None,
     ) -> None:
         self.file_paths = {Path(file_path) for file_path in file_paths}
-        self.deploy_url = (api_url or settings.GAUGE_API_URL) + "/deploy/"
+        self.deploy_url = (api_url or settings.PARE_API_URL) + "/deploy/"
         self.client_secret = client_secret or settings.CLIENT_SECRET
 
     @property

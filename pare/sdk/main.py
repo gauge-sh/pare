@@ -18,7 +18,7 @@ class RemoteInvocationArguments:
 def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) -> Any:
     try:
         response = requests.post(
-            f"{settings.GAUGE_API_URL}/invoke/{function_name}/",
+            f"{settings.PARE_API_URL}/invoke/{function_name}/",
             headers={"X-Client-Secret": settings.CLIENT_SECRET},
             json=json.dumps(asdict(arguments)),
         )
