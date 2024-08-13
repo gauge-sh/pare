@@ -33,6 +33,10 @@ if pgrep gunicorn; then
   pkill gunicorn
 fi
 
+echo "Running migrations..."
+alembic upgrade head
+echo "Done with migrations."
+
 nohup gunicorn \
   -k uvicorn.workers.UvicornWorker \
   -b 0.0.0.0:8000 \
