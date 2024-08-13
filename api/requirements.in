@@ -3,3 +3,6 @@ gunicorn
 boto3
 environs
 python-multipart
+sqlalchemy
+alembic
+asyncpg
