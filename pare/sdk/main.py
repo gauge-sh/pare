@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+import sys
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 import aiohttp
 import requests
+from typing_extensions import ParamSpec
 
 from pare import errors, settings
 
@@ -57,16 +59,20 @@ async def async_invoke_endpoint(
             )
 
 
-def endpoint(
-    name: str, python_version: str = "3.12", dependencies: list[str] = []
-) -> Callable[..., Any]:
+P = ParamSpec("P")
+R = TypeVar("R")
+
+PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
+
+
+def endpoint(name: str, dependencies: list[str] = []) -> Callable[..., Any]:
     def endpoint_decorator(
-        function: Callable[..., Any],
-    ) -> Callable[..., Any]:
+        function: Callable[P, R],
+    ) -> Callable[P, R]:
         def _pare_register() -> tuple[str, dict[str, str | list[str]]]:
             return name, {
                 "function": function.__name__,
-                "python_version": python_version,
+                "python_version": PYTHON_VERSION,
                 "dependencies": dependencies,
             }
 
@@ -99,7 +105,7 @@ def endpoint(
 
         function.as_lambda_function_url_handler = _as_lambda_handler  # pyright: ignore[reportFunctionMemberAccess]
 
-        def _invoke_fn(*args, **kwargs) -> Callable[..., Any]:  # type: ignore
+        def _invoke_fn(*args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
             return invoke_endpoint(
                 name,
                 RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
@@ -107,7 +113,7 @@ def endpoint(
 
         function.invoke = _invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
 
-        async def _async_invoke_fn(*args, **kwargs) -> Callable[..., Any]:  # type: ignore
+        async def _async_invoke_fn(*args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
             return await async_invoke_endpoint(
                 name,
                 RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore

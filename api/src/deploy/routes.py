@@ -25,9 +25,6 @@ class ServiceConfig(BaseModel):
 UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 
 
-# TODO: middleware to pull user for the request from api key
-
-
 @router.post("/deploy/")
 async def deploy_zip(
     # file: Annotated[UploadFile, File()],  # type: ignore
