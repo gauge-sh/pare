@@ -35,3 +35,4 @@ AWS_DEFAULT_REGION: str = env.str("AWS_DEFAULT_REGION", "us-east-1")
 PARE_ATOMIC_DEPLOYMENT_HEADER: str = env.str(
     "PARE_ATOMIC_DEPLOYMENT_HEADER", "X-Pare-Atomic-Deployment"
 )
+PARE_API_KEY_HEADER: str = env.str("PARE_API_KEY_HEADER", "X-Pare-API-Key")

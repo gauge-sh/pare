@@ -16,7 +16,7 @@ from sqlalchemy.orm import joinedload
 from src import settings
 from src.constants import API_VERSION
 from src.db import get_db
-from src.middleware import get_deploy_version, get_user_id
+from src.middleware import get_deploy_version, get_user
 from src.models import Deployment, Service, User
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ router = APIRouter(prefix=f"/{API_VERSION}/services")
 
 async def service_for_user(
     deploy_version: str = Depends(get_deploy_version),
-    user_id: int = Depends(get_user_id),
+    user: User = Depends(get_user),
     service_name: str = Path(
         ..., title="Service Name", description="Name of the deployed service"
     ),
@@ -42,7 +42,7 @@ async def service_for_user(
             .join(Deployment.user)
             .options(joinedload(Service.deployment).joinedload(Deployment.user))
             .where(
-                (User.id == user_id)
+                (User.id == user.id)
                 & (Service.name == service_name)
                 & (Deployment.git_hash == deploy_version)
             )
@@ -90,7 +90,7 @@ def get_lambda_info(service: Service = Depends(service_for_user)):
 
 @router.get("/", response_model=List[ServiceSchema])
 async def list_lambda_info(
-    user_id: int = Depends(get_user_id), db: AsyncSession = Depends(get_db)
+    user: User = Depends(get_user), db: AsyncSession = Depends(get_db)
 ):
     async with db as session:
         query = (
@@ -98,7 +98,7 @@ async def list_lambda_info(
             .join(Service.deployment)
             .join(Deployment.user)
             .options(joinedload(Service.deployment).joinedload(Deployment.user))
-            .where(User.id == user_id)
+            .where(User.id == user.id)
         )
 
         result = await session.execute(query)

@@ -16,8 +16,8 @@ from src.db import get_db
 from src.deploy import (
     deploy_python_lambda_function,
 )
-from src.middleware import get_user_id
-from src.models import Deployment, Service
+from src.middleware import get_user
+from src.models import Deployment, Service, User
 from src.transform import build_lambda_handler
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 async def deploy_zip(
     file: Annotated[UploadFile, File()],
     json_data: Annotated[str, Form()],
-    user_id: int = Depends(get_user_id),
+    user: User = Depends(get_user),
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -87,7 +87,7 @@ async def deploy_zip(
             )
 
     async with db as session:
-        deployment = Deployment(user_id=user_id, git_hash=deploy_config.git_hash)
+        deployment = Deployment(user_id=user.id, git_hash=deploy_config.git_hash)
         session.add(deployment)
         await session.commit()
 
