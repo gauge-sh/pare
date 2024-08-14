@@ -1,0 +1,55 @@
+exclude = [
+    ".*__pycache__",
+    ".*egg-info",
+    "api/src/transform/template.py",
+    "docs",
+    "pare/cli/tests",
+    "pare/sdk/tests",
+    "venv",
+]
+
+[[modules]]
+path = "pare"
+depends_on = [
+    { path = "pare.sdk" },
+]
+
+[[modules]]
+path = "pare.cli"
+depends_on = [
+    { path = "pare.client" },
+    { path = "pare.constants" },
+    { path = "pare.models" },
+    { path = "pare.settings" },
+]
+
+[[modules]]
+path = "pare.client"
+depends_on = [
+    { path = "pare.settings" },
+]
+
+[[modules]]
+path = "pare.constants"
+depends_on = []
+
+[[modules]]
+path = "pare.errors"
+depends_on = []
+
+[[modules]]
+path = "pare.models"
+depends_on = []
+
+[[modules]]
+path = "pare.sdk"
+depends_on = [
+    { path = "pare.client" },
+    { path = "pare.errors" },
+    { path = "pare.models" },
+    { path = "pare.settings" },
+]
+
+[[modules]]
+path = "pare.settings"
+depends_on = []
