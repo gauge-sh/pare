@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, List
 
 import boto3
 from botocore.exceptions import ClientError
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 
-router = APIRouter(prefix=f"/{API_VERSION}")
+router = APIRouter(prefix=f"/{API_VERSION}/services")
 
 
 async def service_for_user(
@@ -80,6 +80,25 @@ class ServiceSchema(BaseModel):
 @router.get("/{service_name}/", response_model=ServiceSchema)
 def get_lambda_info(service: Service = Depends(service_for_user)):
     return service
+
+
+@router.get("/", response_model=List[ServiceSchema])
+async def list_lambda_info(
+    user_id: int = Depends(get_user_id), db: AsyncSession = Depends(get_db)
+):
+    async with db as session:
+        query = (
+            select(Service)
+            .join(Service.deployment)
+            .join(Deployment.user)
+            .options(joinedload(Service.deployment).joinedload(Deployment.user))
+            .where(User.id == user_id)
+        )
+
+        result = await session.execute(query)
+        services = result.scalars().all()
+
+    return services
 
 
 @router.delete("/delete/{service_name}/")
