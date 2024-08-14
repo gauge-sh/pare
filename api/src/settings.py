@@ -17,6 +17,7 @@ env.read_env()
 
 
 DEBUG = env.bool("DEBUG", False)
+DEBUG_USER_ID = env.int("DEBUG_USER_ID", 1)
 
 DB_USER = env.str("DB_USER", "postgres")
 DB_PASSWORD = env.str("DB_PASSWORD")

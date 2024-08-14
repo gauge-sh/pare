@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING  # type: ignore
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
+from src.auth import get_user_id
 from src.constants import API_VERSION
 from src.db import get_db
 from src.models import Deployment, Service
@@ -31,6 +32,7 @@ UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 async def deploy_zip(
     # file: Annotated[UploadFile, File()],  # type: ignore
     # json_data: Annotated[str, Form()],  # type: ignore
+    user_id: int = Depends(get_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -98,8 +100,6 @@ async def deploy_zip(
     #         )
     ...
 
-    # TODO: pull user ID from API key from middleware
-    user_id = 1
     async with db as session:
         deployment = Deployment(user_id=user_id, git_hash=git_hash)
         session.add(deployment)
