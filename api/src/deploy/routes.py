@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING  # type: ignore
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from src.auth import get_user_id
 from src.constants import API_VERSION
 from src.db import get_db
+from src.middleware import get_user_id
 from src.models import Deployment, Service
 
 if TYPE_CHECKING:

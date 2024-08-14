@@ -14,9 +14,9 @@ from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.orm import joinedload
 
 from src import settings
-from src.auth import get_user_id
 from src.constants import API_VERSION
 from src.db import get_db
+from src.middleware import get_deploy_version, get_user_id
 from src.models import Deployment, Service, User
 
 if TYPE_CHECKING:
@@ -27,19 +27,25 @@ router = APIRouter(prefix=f"/{API_VERSION}/services")
 
 
 async def service_for_user(
+    deploy_version: str = Depends(get_deploy_version),
     user_id: int = Depends(get_user_id),
     service_name: str = Path(
         ..., title="Service Name", description="Name of the deployed service"
     ),
     db: AsyncSession = Depends(get_db),
 ) -> Service:
+    # TODO: support fallback 'latest' deploy_version
     async with db as session:
         query = (
             select(Service)
             .join(Service.deployment)
             .join(Deployment.user)
             .options(joinedload(Service.deployment).joinedload(Deployment.user))
-            .where((User.id == user_id) & (Service.name == service_name))
+            .where(
+                (User.id == user_id)
+                & (Service.name == service_name)
+                & (Deployment.git_hash == deploy_version)
+            )
         )
 
         result = await session.execute(query)
