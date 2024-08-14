@@ -14,6 +14,7 @@ from rich.console import Console
 
 from pare import settings
 from pare.cli.console import log_error, log_task
+from pare.client import get_current_git_hash
 from pare.constants import PYTHON_VERSION
 from pare.models import DeployConfig, ServiceConfig, ServiceRegistration
 
@@ -30,10 +31,14 @@ class DeployHandler:
             settings.PARE_API_URL + settings.PARE_API_DEPLOY_URL_PATH
         )
         self.api_key = api_key or settings.PARE_API_KEY
+        self.atomic_deployment = get_current_git_hash()
 
     @property
     def headers(self) -> dict[str, str]:
-        return {settings.PARE_API_KEY_HEADER: self.api_key}
+        return {
+            settings.PARE_API_KEY_HEADER: self.api_key,
+            settings.PARE_ATOMIC_DEPLOYMENT_HEADER: self.atomic_deployment,
+        }
 
     def validate_file_paths(self) -> None:
         errored = False

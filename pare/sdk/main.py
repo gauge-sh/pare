@@ -9,6 +9,7 @@ import requests
 from typing_extensions import ParamSpec
 
 from pare import errors, settings
+from pare.client import get_current_git_hash
 from pare.models import ServiceRegistration
 
 
@@ -22,7 +23,10 @@ def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) ->
     try:
         response = requests.post(
             f"{settings.PARE_API_URL}{settings.PARE_API_INVOKE_URL_PATH}{function_name}/",
-            headers={settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY},
+            headers={
+                settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
+                settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
+            },
             json=json.dumps(asdict(arguments)),
         )
         response.raise_for_status()
@@ -44,7 +48,10 @@ async def async_invoke_endpoint(
         try:
             async with session.post(
                 f"{settings.PARE_API_URL}/invoke/{function_name}/",
-                headers={settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY},
+                headers={
+                    settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
+                    settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
+                },
                 json=json.dumps(asdict(arguments)),
             ) as response:
                 response.raise_for_status()

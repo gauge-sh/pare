@@ -6,13 +6,17 @@ import requests
 
 from pare import settings
 from pare.cli.console import log_error
+from pare.client import get_current_git_hash
 
 
 def delete_function(function_name: str) -> None:
     try:
         response = requests.delete(
             f"{settings.PARE_API_URL}{settings.PARE_API_DELETE_URL_PATH}{function_name}/",
-            headers={settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY},
+            headers={
+                settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
+                settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
+            },
         )
         response.raise_for_status()
     except requests.HTTPError as e:
