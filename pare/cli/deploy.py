@@ -2,46 +2,38 @@ from __future__ import annotations
 
 import importlib.util
 import inspect
-import json
 import os
 import sys
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Dict, TypedDict
+from typing import cast
 
 import requests
 from rich.console import Console
 
 from pare import settings
 from pare.cli.console import log_error, log_task
-
-
-class DeployType(TypedDict):
-    module: str | None
-    reference: str
-    function: str
-    python_version: str
-    dependencies: list[str]
-
-
-DeployConfigType = Dict[str, DeployType]
+from pare.constants import PYTHON_VERSION
+from pare.models import DeployConfig, ServiceConfig, ServiceRegistration
 
 
 class DeployHandler:
     def __init__(
         self,
         file_paths: list[str],
-        api_url: str | None = None,
-        client_secret: str | None = None,
+        deploy_url: str | None = None,
+        api_key: str | None = None,
     ) -> None:
         self.file_paths = {Path(file_path) for file_path in file_paths}
-        self.deploy_url = (api_url or settings.PARE_API_URL) + "/deploy/"
-        self.client_secret = client_secret or settings.CLIENT_SECRET
+        self.deploy_url = deploy_url or (
+            settings.PARE_API_URL + settings.PARE_API_DEPLOY_URL_PATH
+        )
+        self.api_key = api_key or settings.PARE_API_KEY
 
     @property
     def headers(self) -> dict[str, str]:
-        return {"X-Client-Secret": self.client_secret}
+        return {settings.PARE_API_KEY_HEADER: self.api_key}
 
     def validate_file_paths(self) -> None:
         errored = False
@@ -68,12 +60,15 @@ class DeployHandler:
                     zipf.write(file_path)
         return zip_path
 
-    def upload(self, zip_path: Path, deployments: DeployConfigType) -> None:
+    def upload(self, zip_path: Path, deploy_config: DeployConfig) -> None:
         with log_task(
             start_message="Uploading bundle...", end_message="Bundle uploaded"
         ):
             with open(zip_path, "rb") as zip_file:
-                files = {"file": zip_file, "json_data": (None, json.dumps(deployments))}
+                files = {
+                    "file": zip_file,
+                    "json_data": (None, deploy_config.model_dump_json()),
+                }
                 resp = requests.post(
                     self.deploy_url,
                     headers=self.headers,
@@ -83,8 +78,9 @@ class DeployHandler:
                 log_error("Failed to trigger the deploy")
                 sys.exit(1)
 
-    def register_deployments(self) -> DeployConfigType:
-        results = {}
+    def register_services(self) -> list[ServiceConfig]:
+        services: list[ServiceConfig] = []
+        service_names: set[str] = set()
         for file_path in self.file_paths:
             module_name = str(file_path).replace(os.path.sep, ".").replace(".py", "")
             spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
@@ -94,21 +90,26 @@ class DeployHandler:
                 for name, obj in inspect.getmembers(module):
                     if inspect.isfunction(obj) and hasattr(obj, "_pare_register"):
                         try:
-                            name, config = obj._pare_register()  # type: ignore
-                            if name in results:
+                            service_registration = cast(
+                                ServiceRegistration,
+                                obj._pare_register(),  # type: ignore
+                            )
+                            if name in service_names:
                                 raise ValueError(f"Duplicate endpoint {name}")
-                            results[name] = {
-                                "module": module_name,
-                                "reference": f"{module_name}:{config['function']}",
-                                **config,
-                            }
-
+                            service_names.add(name)
+                            services.append(
+                                ServiceConfig(
+                                    name=service_registration.name,
+                                    path=f"{module_name}:{service_registration.function}",
+                                    requirements=service_registration.dependencies,
+                                )
+                            )
                         except Exception as e:
                             print(f"Error calling _pare_register on {name}: {e}")
                             break
             else:
                 print(f"Couldn't load module from {file_path}")
-        return results  # type: ignore
+        return services
 
     def deploy(self):
         console = Console()
@@ -116,8 +117,13 @@ class DeployHandler:
             "[bold white]Deploying...[/bold white]",
         )
         self.validate_file_paths()
-        deployments = self.register_deployments()
+        services = self.register_services()
+        deploy_config = DeployConfig(
+            git_hash="1234567890",
+            python_version=PYTHON_VERSION,
+            services=services,
+        )
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)
-            self.upload(zip_path, deployments)
+            self.upload(zip_path, deploy_config=deploy_config)
         console.print("[bold green]Deployed![/bold green]")

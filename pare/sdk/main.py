@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, TypeVar
 
@@ -10,6 +9,7 @@ import requests
 from typing_extensions import ParamSpec
 
 from pare import errors, settings
+from pare.models import ServiceRegistration
 
 
 @dataclass
@@ -21,8 +21,8 @@ class RemoteInvocationArguments:
 def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) -> Any:
     try:
         response = requests.post(
-            f"{settings.PARE_API_URL}/invoke/{function_name}/",
-            headers={"X-Client-Secret": settings.CLIENT_SECRET},
+            f"{settings.PARE_API_URL}{settings.PARE_API_INVOKE_URL_PATH}{function_name}/",
+            headers={settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY},
             json=json.dumps(asdict(arguments)),
         )
         response.raise_for_status()
@@ -44,7 +44,7 @@ async def async_invoke_endpoint(
         try:
             async with session.post(
                 f"{settings.PARE_API_URL}/invoke/{function_name}/",
-                headers={"X-Client-Secret": settings.CLIENT_SECRET},
+                headers={settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY},
                 json=json.dumps(asdict(arguments)),
             ) as response:
                 response.raise_for_status()
@@ -62,19 +62,15 @@ async def async_invoke_endpoint(
 P = ParamSpec("P")
 R = TypeVar("R")
 
-PYTHON_VERSION = f"{sys.version_info.major}.{sys.version_info.minor}"
-
 
 def endpoint(name: str, dependencies: list[str] = []) -> Callable[..., Any]:
     def endpoint_decorator(
         function: Callable[P, R],
     ) -> Callable[P, R]:
-        def _pare_register() -> tuple[str, dict[str, str | list[str]]]:
-            return name, {
-                "function": function.__name__,
-                "python_version": PYTHON_VERSION,
-                "dependencies": dependencies,
-            }
+        def _pare_register() -> ServiceRegistration:
+            return ServiceRegistration(
+                name=name, function=function.__name__, dependencies=dependencies
+            )
 
         function._pare_register = _pare_register  # pyright: ignore[reportFunctionMemberAccess]
 

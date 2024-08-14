@@ -11,8 +11,8 @@ from pare.cli.console import log_error
 def delete_function(function_name: str) -> None:
     try:
         response = requests.delete(
-            settings.PARE_API_URL + f"/delete/{function_name}/",
-            headers={"X-Client-Secret": settings.CLIENT_SECRET},
+            f"{settings.PARE_API_URL}{settings.PARE_API_DELETE_URL_PATH}{function_name}/",
+            headers={settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY},
         )
         response.raise_for_status()
     except requests.HTTPError as e:

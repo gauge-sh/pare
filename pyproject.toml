@@ -2,8 +2,8 @@
 name = "pare"
 version = "0.0.10"
 authors = [
-  { name="Caelean Barnes", email="caeleanb@gmail.com" },
-  { name="Evan Doyle", email="evanmdoyle@gmail.com" },
+    { name = "Caelean Barnes", email = "caeleanb@gmail.com" },
+    { name = "Evan Doyle", email = "evanmdoyle@gmail.com" },
 ]
 description = "Effortless serverless, in your own cloud"
 readme = "README.md"
@@ -74,10 +74,7 @@ lint.extend-select = ["I", "TCH", "UP"]
 required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-    "pydantic.BaseModel",
-    "pydantic.RootModel",
-]
+runtime-evaluated-base-classes = ["pydantic.BaseModel", "pydantic.RootModel"]
 runtime-evaluated-decorators = [
     "pydantic.dataclasses.dataclass",
     "dataclasses.dataclass",
@@ -85,7 +82,12 @@ runtime-evaluated-decorators = [
 exempt-modules = ["typing", "typing_extensions"]
 
 [tool.pyright]
-exclude = ["**/__pycache__", ".venv", "api/src/transform/template.py"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/tests",
+    "api/src/transform/template.py",
+]
 strict = ["."]
 pythonVersion = "3.8"
 
