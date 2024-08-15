@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends
+from fastapi.responses import JSONResponse
 
 from src import settings
 from src.db import get_db
@@ -45,7 +46,7 @@ def apply_middleware(app: FastAPI) -> None:
         if settings.PARE_API_KEY_HEADER in request.headers:
             request.state.api_key = request.headers[settings.PARE_API_KEY_HEADER]
         else:
-            raise HTTPException(status_code=401, detail="Unauthenticated")
+            return JSONResponse(status_code=401, content={"detail": "Unauthenticated"})
         return await call_next(request)
 
     @app.middleware("http")
