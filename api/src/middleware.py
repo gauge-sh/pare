@@ -24,9 +24,13 @@ async def get_user(request: Request, db: AsyncSession = Depends(get_db)) -> User
         api_key = request.state.api_key
         async with db as session:
             user = await session.execute(select(User).where(User.api_key == api_key))
-            return user.scalar_one()
+            user = user.scalar_one()
     except (AttributeError, MultipleResultsFound, NoResultFound):
         raise HTTPException(status_code=401, detail="Unauthenticated")
+
+    if user.is_blocked:  # type: ignore
+        raise HTTPException(status_code=403, detail="User is blocked")
+    return user
 
 
 async def get_deploy_version(request: Request) -> str:
