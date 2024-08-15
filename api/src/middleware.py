@@ -55,7 +55,6 @@ def apply_middleware(app: FastAPI) -> None:
     @app.middleware("http")
     async def atomic_deployment_middleware(request: Request, call_next: Any):  # pyright: ignore[reportUnusedFunction]
         if settings.PARE_ATOMIC_DEPLOYMENT_HEADER in request.headers:
-            # This is either a git hash or 'latest'
             request.state.deploy_version = request.headers[
                 settings.PARE_ATOMIC_DEPLOYMENT_HEADER
             ]

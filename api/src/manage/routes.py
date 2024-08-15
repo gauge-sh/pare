@@ -10,7 +10,6 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, field_serializer
 from sqlalchemy import select
-from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.orm import joinedload
 
 from src import settings
@@ -34,28 +33,35 @@ async def service_for_user(
     ),
     db: AsyncSession = Depends(get_db),
 ) -> Service:
-    # TODO: support fallback 'latest' deploy_version
     async with db as session:
-        query = (
+        result = await session.execute(
             select(Service)
             .join(Service.deployment)
             .join(Deployment.user)
             .options(joinedload(Service.deployment).joinedload(Deployment.user))
-            .where(
-                (User.id == user.id)
-                & (Service.name == service_name)
-                & (Deployment.git_hash == deploy_version)
-            )
+            .where((User.id == user.id) & (Service.name == service_name))
         )
 
-        result = await session.execute(query)
+        services = result.scalars().all()
 
-        try:
-            return result.scalar_one()
-        except NoResultFound:
-            raise HTTPException(status_code=403, detail="Unauthorized")
-        except MultipleResultsFound:
-            raise HTTPException(status_code=500, detail="Multiple services found")
+        if not services:
+            raise HTTPException(status_code=404, detail="Service not found")
+
+        matching_service: Service | None = None
+        for service in services:
+            if service.deployment.git_hash == deploy_version:
+                if matching_service:
+                    raise HTTPException(
+                        status_code=500, detail="Multiple services found"
+                    )
+                matching_service = service
+
+        if not matching_service:
+            raise HTTPException(
+                status_code=404, detail="Service not found for deploy version"
+            )
+
+        return matching_service
 
 
 class DeploymentSchema(BaseModel):
