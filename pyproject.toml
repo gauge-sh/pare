@@ -67,7 +67,12 @@ Issues = "https://github.com/gauge-sh/pare/issues"
 
 [tool.ruff]
 target-version = "py38"
-exclude = ["**/__pycache__", ".venv", "api/src/transform/template.py"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/alembic",
+    "api/src/transform/template.py",
+]
 lint.extend-select = ["I", "TCH", "UP"]
 
 [tool.ruff.lint.isort]

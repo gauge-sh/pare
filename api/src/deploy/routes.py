@@ -53,6 +53,12 @@ async def deploy_zip(
     except Exception:
         raise HTTPException(status_code=422, detail="Couldn't process deployment data.")
 
+    async with db as session:
+        # TODO: handle existing deployment
+        deployment = Deployment(user_id=user.id, git_hash=deploy_config.git_hash)
+        session.add(deployment)
+        await session.commit()
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         zipfile_path = tmp_dir / UPLOADED_BUNDLE_FILENAME
@@ -86,16 +92,11 @@ async def deploy_zip(
                 python_version=deploy_config.python_version,
             )
 
-    async with db as session:
-        deployment = Deployment(user_id=user.id, git_hash=deploy_config.git_hash)
-        session.add(deployment)
-        await session.commit()
-
-    async with db as session:
-        for service in deploy_config.services:
-            service = Service(deployment_id=deployment.id, name=service.name)
-            session.add(service)
-        await session.commit()
+            # Write metadata immediately after deployment, even if future services fail to deploy
+            async with db as session:
+                service = Service(deployment_id=deployment.id, name=service.name)
+                session.add(service)
+                await session.commit()
 
     # TODO: return deployment and services
     return {"status": "OK"}
