@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 from fastapi import Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy import select
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from src import settings
 from src.db import get_db
@@ -21,12 +23,9 @@ async def get_user(request: Request, db: AsyncSession = Depends(get_db)) -> User
     try:
         api_key = request.state.api_key
         async with db as session:
-            user = await session.execute(User.select().where(User.api_key == api_key))
-            user = user.scalar_one()
-            if user is None:
-                raise HTTPException(status_code=401, detail="Unauthenticated")
-            return user
-    except AttributeError:
+            user = await session.execute(select(User).where(User.api_key == api_key))
+            return user.scalar_one()
+    except (AttributeError, MultipleResultsFound, NoResultFound):
         raise HTTPException(status_code=401, detail="Unauthenticated")
 
 
