@@ -31,6 +31,7 @@ DATABASE_URL: str = (
 
 LAMBDA_ROLE_ARN: str = env.str("LAMBDA_ROLE_ARN")
 AWS_DEFAULT_REGION: str = env.str("AWS_DEFAULT_REGION", "us-east-1")
+AWS_ACCOUNT_ID: str = env.str("AWS_ACCOUNT_ID")
 
 PARE_ATOMIC_DEPLOYMENT_HEADER: str = env.str(
     "PARE_ATOMIC_DEPLOYMENT_HEADER", "X-Pare-Atomic-Deployment"

@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
 from src.build import install_deps_to_dir, write_extended_zipfile, write_to_zipfile
 from src.constants import API_VERSION
+from src.core.models import DeployConfig
 from src.db import get_db
 from src.deploy import (
-    deploy_python_lambda_function,
+    deploy_python_lambda_function_from_zip,
 )
 from src.middleware import get_user
 from src.models import Deployment, Service, User
@@ -24,18 +24,6 @@ if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix=f"/{API_VERSION}")
-
-
-class ServiceConfig(BaseModel):
-    name: str
-    path: str
-    requirements: list[str] = Field(default_factory=list)
-
-
-class DeployConfig(BaseModel):
-    git_hash: str
-    python_version: str
-    services: list[ServiceConfig] = Field(default_factory=list)
 
 
 UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
@@ -86,7 +74,7 @@ async def deploy_zip(
                 output_path=deployment_package_path,
             )
 
-            deploy_python_lambda_function(
+            deploy_python_lambda_function_from_zip(
                 function_name=service.name,
                 zip_file=deployment_package_path,
                 python_version=deploy_config.python_version,

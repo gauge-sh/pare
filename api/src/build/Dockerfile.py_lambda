@@ -1,0 +1,10 @@
+ARG PYTHON_VERSION
+
+FROM public.ecr.aws/lambda/python:$PYTHON_VERSION
+
+COPY requirements.txt ${LAMBDA_TASK_ROOT}
+RUN pip install -r requirements.txt
+
+COPY build-root/ ${LAMBDA_TASK_ROOT}
+
+CMD ["lambda_function.lambda_handler"]

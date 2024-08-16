@@ -18,6 +18,11 @@ def write_to_zipfile(content: bytes, output_path: Path) -> None:
         output_path.write_bytes(content)
 
 
+def unzip_file(zipfile_path: Path, output_dir: Path) -> None:
+    with ZipFile(zipfile_path, "r") as zip_ref:
+        zip_ref.extractall(output_dir)
+
+
 def write_extended_zipfile(
     existing_zipfile: Path, additional_paths: list[Path], output_path: Path
 ) -> None:

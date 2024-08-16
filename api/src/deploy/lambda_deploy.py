@@ -23,7 +23,10 @@ def translate_python_version_to_lambda_runtime(python_version: str) -> str:
     return runtime_version
 
 
-def deploy_python_lambda_function(
+async def deploy_python_lambda_function_from_ecr(): ...
+
+
+def deploy_python_lambda_function_from_zip(
     function_name: str,
     zip_file: Path,
     python_version: str,
