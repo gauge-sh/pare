@@ -26,12 +26,9 @@ def translate_python_version_to_lambda_runtime(python_version: str) -> str:
 async def deploy_python_lambda_function_from_ecr(
     function_name: str,
     image_name: str,
-    python_version: str,
-    handler: str = "lambda_function.lambda_handler",
 ):
     # Initialize the Lambda client
     lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
-    lambda_runtime = translate_python_version_to_lambda_runtime(python_version)
 
     try:
         lambda_client.get_function(FunctionName=function_name)  # type: ignore
@@ -48,10 +45,10 @@ async def deploy_python_lambda_function_from_ecr(
             response = lambda_client.create_function(  # type: ignore
                 FunctionName=function_name,
                 PackageType="Image",
-                ImageUri=image_name,
-                Runtime=lambda_runtime,
+                Code={
+                    "ImageUri": image_name,
+                },
                 Role=settings.LAMBDA_ROLE_ARN,
-                Handler=handler,
             )
             print(f"Created new Lambda function: {function_name}")
         else:

@@ -46,7 +46,6 @@ async def deploy_image(
     return await deploy_python_lambda_function_from_ecr(
         function_name=service_config.name,
         image_name=build_result.image_name,
-        python_version=deploy_config.python_version,
     )
 
 
