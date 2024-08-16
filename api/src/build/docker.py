@@ -48,7 +48,7 @@ async def build_and_publish_image_to_ecr(
         requirements.write_text("\n".join(service_config.requirements))
 
         # lambda function
-        lambda_function = tmp_dir / "lambda_function.py"
+        lambda_function = build_path / "lambda_function.py"
         build_lambda_handler(service_config.path, lambda_function)
 
         # build and push image
