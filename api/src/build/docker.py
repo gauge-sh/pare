@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import tempfile
 from dataclasses import dataclass
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -45,7 +46,7 @@ async def build_and_publish_image_to_ecr(
 
         # write requirements.txt
         requirements = tmp_dir / "requirements.txt"
-        requirements.write_text("\n".join(service_config.requirements))
+        requirements.write_text("\n".join(chain(service_config.requirements, ["pare"])))
 
         # lambda function
         lambda_function = build_path / "lambda_function.py"
@@ -58,7 +59,7 @@ async def build_and_publish_image_to_ecr(
         # --push here assumes that we have already authenticated with ECR
         # TODO fix abs docker path
         result = await run_async_subprocess(
-            f'/usr/bin/docker build --push -t {ecr_image_name} --build-arg="PYTHON_VERSION={deploy_config.python_version}" {tmp_dir}'
+            f'/usr/bin/docker build --push -t {ecr_image_name} --build-arg="PYTHON_VERSION={deploy_config.python_version}" --provenance=false {tmp_dir}'
         )
         print(result.stdout)
         print(result.stderr)
