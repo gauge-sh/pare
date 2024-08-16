@@ -1,17 +1,28 @@
 # type: ignore
 from __future__ import annotations
 
+from pathlib import Path
+
 from environs import Env
 
 env = Env()
 env.read_env()
 
-PARE_API_URL: str = env.str("PARE_API_URL", "http://localhost:8000/v0.1")
+PARE_API_URL: str = env.str("PARE_API_URL", "http://localhost:8000")
+PARE_API_VERSION: str = env.str("PARE_API_VERSION", "v0.1")
 PARE_API_DEPLOY_URL_PATH: str = env.str("PARE_API_DEPLOY_URL_PATH", "/deploy/")
 PARE_API_SERVICES_URL_PATH: str = env.str("PARE_API_SERVICES_URL_PATH", "/services/")
 PARE_API_INVOKE_URL_PATH: str = env.str("PARE_API_INVOKE_URL_PATH", "/services/invoke/")
 PARE_API_DELETE_URL_PATH: str = env.str("PARE_API_DELETE_URL_PATH", "/services/delete/")
+
 PARE_API_KEY: str = env.str("PARE_API_KEY", "")
+PARE_API_KEY_FILE: str = env.str("PARE_API_KEY_FILE", ".pare/api_key.priv")
+
+if not PARE_API_KEY and PARE_API_KEY_FILE:
+    pare_api_key_path = Path(PARE_API_KEY_FILE)
+    if pare_api_key_path.exists():
+        PARE_API_KEY = pare_api_key_path.read_text()
+
 PARE_API_KEY_HEADER: str = env.str("PARE_API_KEY_HEADER", "X-Pare-API-Key")
 PARE_ATOMIC_DEPLOYMENT_HEADER: str = env.str(
     "PARE_ATOMIC_DEPLOYMENT_HEADER", "X-Pare-Atomic-Deployment"

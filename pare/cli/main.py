@@ -6,7 +6,7 @@ from rich.console import Console
 
 from pare.cli.delete import delete_function
 from pare.cli.deploy import DeployHandler
-from pare.login import login, whoami
+from pare.login import login
 
 
 def deploy(file_path_str: str) -> None:
@@ -45,8 +45,6 @@ def create_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("login", help="Authenticate with github.")
 
-    subparsers.add_parser("whoami", help="Check if you're logged in.")
-
     parser_deploy = subparsers.add_parser("deploy", help="Deploy the application.")
     parser_deploy.add_argument(
         "file_paths", type=str, help="A comma-separated list of file paths to deploy."
@@ -73,8 +71,6 @@ def main() -> None:
         delete(args.function_name)
     elif args.command == "login":
         login()
-    elif args.command == "whoami":
-        whoami()
     else:
         print("Unknown command")
         parser.print_help()

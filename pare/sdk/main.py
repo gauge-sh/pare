@@ -22,7 +22,7 @@ class RemoteInvocationArguments:
 def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) -> Any:
     try:
         response = requests.post(
-            f"{settings.PARE_API_URL}{settings.PARE_API_INVOKE_URL_PATH}{function_name}/",
+            f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_INVOKE_URL_PATH}{function_name}/",
             headers={
                 settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
                 settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
@@ -47,7 +47,7 @@ async def async_invoke_endpoint(
     async with aiohttp.ClientSession() as session:
         try:
             async with session.post(
-                f"{settings.PARE_API_URL}/invoke/{function_name}/",
+                f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}/invoke/{function_name}/",
                 headers={
                     settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
                     settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),

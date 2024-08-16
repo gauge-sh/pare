@@ -28,7 +28,7 @@ class DeployHandler:
     ) -> None:
         self.file_paths = {Path(file_path) for file_path in file_paths}
         self.deploy_url = deploy_url or (
-            settings.PARE_API_URL + settings.PARE_API_DEPLOY_URL_PATH
+            f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_DEPLOY_URL_PATH}"
         )
         self.api_key = api_key or settings.PARE_API_KEY
         self.atomic_deployment = get_current_git_hash()
