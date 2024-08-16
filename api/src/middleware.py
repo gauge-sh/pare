@@ -43,12 +43,16 @@ async def get_deploy_version(request: Request) -> str:
         )
 
 
+AUTH_EXEMPT = {"/healthcheck/", "/login-with-github/"}
+
+
 def apply_middleware(app: FastAPI) -> None:
     @app.middleware("http")
     async def api_key_middleware(request: Request, call_next: Any):  # pyright: ignore[reportUnusedFunction]
         if settings.PARE_API_KEY_HEADER in request.headers:
             request.state.api_key = request.headers[settings.PARE_API_KEY_HEADER]
-        else:
+        elif request.url.path not in AUTH_EXEMPT:
+            print(request.url.path)
             return JSONResponse(status_code=401, content={"detail": "Unauthenticated"})
         return await call_next(request)
 

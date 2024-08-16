@@ -6,3 +6,4 @@ python-multipart
 sqlalchemy
 alembic
 asyncpg
+aiohttp
