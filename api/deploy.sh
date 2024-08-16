@@ -27,6 +27,11 @@ pip install --upgrade pip pip-tools uv
 uv pip compile $API_DIR/requirements.in -o $API_DIR/requirements.txt
 uv pip install -r $API_DIR/requirements.txt
 
+if [ ! -d /home/ec2-user/pare-scripts ]; then
+  mkdir /home/ec2-user/pare-scripts
+fi
+cp -r $API_DIR/scripts /home/ec2-user/pare-scripts
+
 cd $API_DIR
 
 if pgrep gunicorn; then
