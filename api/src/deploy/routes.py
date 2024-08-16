@@ -79,13 +79,15 @@ async def deploy(
             return JSONResponse(status_code=400, content={"error": str(err)})
 
         deploy_results = await asyncio.gather(
-            deploy_image(
-                bundle_dir=unzipped_bundle_path,
-                service_config=service,
-                deploy_config=deploy_config,
-                user=user,
-            )
-            for service in deploy_config.services
+            *[
+                deploy_image(
+                    bundle_dir=unzipped_bundle_path,
+                    service_config=service,
+                    deploy_config=deploy_config,
+                    user=user,
+                )
+                for service in deploy_config.services
+            ]
         )
 
         # Assuming that 'gather' has preserved the order
