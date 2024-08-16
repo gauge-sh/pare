@@ -30,7 +30,7 @@ uv pip install -r $API_DIR/requirements.txt
 if [ ! -d /home/ec2-user/pare-scripts ]; then
   mkdir /home/ec2-user/pare-scripts
 fi
-cp -r $API_DIR/scripts /home/ec2-user/pare-scripts
+cp -r $API_DIR/scripts/* /home/ec2-user/pare-scripts
 
 cd $API_DIR
 
