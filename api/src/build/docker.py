@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import tempfile
+from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from src import settings
-from src.core.models import DeployConfig, ServiceConfig
-from src.models import User
 from src.utils import run_async_subprocess
+
+if TYPE_CHECKING:
+    from src.core.models import DeployConfig, ServiceConfig
+    from src.models import User
 
 LAMBDA_DOCKERFILE_PATH = Path(__file__).parent / "Dockerfile.py_lambda"
 
@@ -15,9 +19,15 @@ def build_ecr_image_name(repo_name: str, tag: str) -> str:
     return f"{settings.AWS_ACCOUNT_ID}.dkr.ecr.{settings.AWS_DEFAULT_REGION}.amazonaws.com/{repo_name}:{tag}"
 
 
+@dataclass
+class ECRBuildResult:
+    exit_code: int
+    image_name: str
+
+
 async def build_and_publish_image_to_ecr(
     user: User, bundle: Path, service_config: ServiceConfig, deploy_config: DeployConfig
-):
+) -> ECRBuildResult:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
 
@@ -44,4 +54,4 @@ async def build_and_publish_image_to_ecr(
         result = await run_async_subprocess(f"depot build --push -t {ecr_image_name} .")
         print(result.stdout)
         print(result.stderr)
-        return result.exit_code
+        return ECRBuildResult(exit_code=result.exit_code, image_name=ecr_image_name)

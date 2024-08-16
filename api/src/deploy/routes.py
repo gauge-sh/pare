@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import tempfile
 from pathlib import Path
@@ -9,16 +10,13 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from typing_extensions import Annotated
 
-from src.build import install_deps_to_dir, write_extended_zipfile, write_to_zipfile
+from src.build import build_and_publish_image_to_ecr, unzip_file, write_to_zipfile
 from src.constants import API_VERSION
-from src.core.models import DeployConfig
+from src.core.models import DeployConfig, ServiceConfig
 from src.db import get_db
-from src.deploy import (
-    deploy_python_lambda_function_from_zip,
-)
+from src.deploy import deploy_python_lambda_function_from_ecr
 from src.middleware import get_user
 from src.models import Deployment, Service, User
-from src.transform import build_lambda_handler
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,10 +25,33 @@ router = APIRouter(prefix=f"/{API_VERSION}")
 
 
 UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
+UNZIPPED_BUNDLE_DIR = "unzipped_bundle"
+
+
+async def deploy_image(
+    bundle_dir: Path,
+    service_config: ServiceConfig,
+    deploy_config: DeployConfig,
+    user: User,
+) -> bool:
+    build_result = await build_and_publish_image_to_ecr(
+        user=user,
+        bundle=bundle_dir,
+        service_config=service_config,
+        deploy_config=deploy_config,
+    )
+    if build_result.exit_code != 0:
+        return False
+
+    return await deploy_python_lambda_function_from_ecr(
+        function_name=service_config.name,
+        image_name=build_result.image_name,
+        python_version=deploy_config.python_version,
+    )
 
 
 @router.post("/deploy/")
-async def deploy_zip(
+async def deploy(
     file: Annotated[UploadFile, File()],
     json_data: Annotated[str, Form()],
     user: User = Depends(get_user),
@@ -50,41 +71,36 @@ async def deploy_zip(
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         zipfile_path = tmp_dir / UPLOADED_BUNDLE_FILENAME
+        unzipped_bundle_path = tmp_dir / UNZIPPED_BUNDLE_DIR
         try:
             write_to_zipfile(await file.read(), output_path=zipfile_path)  # type: ignore
+            unzip_file(zipfile_path, unzipped_bundle_path)
         except ValueError as err:
             return JSONResponse(status_code=400, content={"error": str(err)})
-        for service in deploy_config.services:
-            # TODO: validate deployment name
-            build_path = tmp_dir / service.name
-            build_path.mkdir(parents=True, exist_ok=True)
-            build_lambda_handler(
-                symbol_path=service.path,
-                output_path=build_path / "lambda_function.py",
-            )
-            install_deps_to_dir(
-                dependencies=service.requirements,
-                python_version=deploy_config.python_version,
-                output_dir=build_path,
-            )
-            deployment_package_path = tmp_dir / f"{service.name}.zip"
-            write_extended_zipfile(
-                existing_zipfile=zipfile_path,
-                additional_paths=[build_path],
-                output_path=deployment_package_path,
-            )
 
-            deploy_python_lambda_function_from_zip(
-                function_name=service.name,
-                zip_file=deployment_package_path,
-                python_version=deploy_config.python_version,
+        deploy_results = await asyncio.gather(
+            deploy_image(
+                bundle_dir=unzipped_bundle_path,
+                service_config=service,
+                deploy_config=deploy_config,
+                user=user,
             )
+            for service in deploy_config.services
+        )
 
-            # Write metadata immediately after deployment, even if future services fail to deploy
-            async with db as session:
-                service = Service(deployment_id=deployment.id, name=service.name)
-                session.add(service)
-                await session.commit()
+        # Assuming that 'gather' has preserved the order
+        succeeded: list[str] = []
+        failed: list[str] = []
+        for i, deploy_succeeded in enumerate(deploy_results):
+            if deploy_succeeded:
+                async with db as session:
+                    service = Service(
+                        deployment_id=deployment.id, name=deploy_config.services[i].name
+                    )
+                    session.add(service)
+                    await session.commit()
+                succeeded.append(deploy_config.services[i].name)
+            else:
+                failed.append(deploy_config.services[i].name)
 
-    # TODO: return deployment and services
-    return {"status": "OK"}
+        return {"succeeded": succeeded, "failed": failed}

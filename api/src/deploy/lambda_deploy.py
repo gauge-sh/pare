@@ -23,7 +23,46 @@ def translate_python_version_to_lambda_runtime(python_version: str) -> str:
     return runtime_version
 
 
-async def deploy_python_lambda_function_from_ecr(): ...
+async def deploy_python_lambda_function_from_ecr(
+    function_name: str,
+    image_name: str,
+    python_version: str,
+    handler: str = "lambda_function.lambda_handler",
+):
+    # Initialize the Lambda client
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
+    lambda_runtime = translate_python_version_to_lambda_runtime(python_version)
+
+    try:
+        lambda_client.get_function(FunctionName=function_name)  # type: ignore
+
+        # If we reach here, the function exists, so we update it
+        response = lambda_client.update_function_code(  # type: ignore
+            FunctionName=function_name, ImageUri=image_name
+        )
+        print(f"Updated existing Lambda function: {function_name}")
+
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ResourceNotFoundException":  # type: ignore
+            # The function doesn't exist, so we create it
+            response = lambda_client.create_function(  # type: ignore
+                FunctionName=function_name,
+                PackageType="Image",
+                ImageUri=image_name,
+                Runtime=lambda_runtime,
+                Role=settings.LAMBDA_ROLE_ARN,
+                Handler=handler,
+            )
+            print(f"Created new Lambda function: {function_name}")
+        else:
+            # Unexpected error
+            print(f"Error deploying Lambda function: {str(e)}")
+            return False
+
+    # Print the response
+    print(json.dumps(response, indent=2, default=str))
+
+    return True
 
 
 def deploy_python_lambda_function_from_zip(
@@ -37,39 +76,37 @@ def deploy_python_lambda_function_from_zip(
     lambda_runtime = translate_python_version_to_lambda_runtime(python_version)
 
     try:
-        # Read the ZIP file
-        with open(zip_file, "rb") as file_data:
-            bytes_content = file_data.read()
-
-        try:
-            # Try to get the function configuration
-            lambda_client.get_function(FunctionName=function_name)  # type: ignore
-
-            # If we reach here, the function exists, so we update it
-            response = lambda_client.update_function_code(  # type: ignore
-                FunctionName=function_name, ZipFile=bytes_content
-            )
-            print(f"Updated existing Lambda function: {function_name}")
-
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "ResourceNotFoundException":  # type: ignore
-                # The function doesn't exist, so we create it
-                response = lambda_client.create_function(  # type: ignore
-                    FunctionName=function_name,
-                    Runtime=lambda_runtime,
-                    Role=settings.LAMBDA_ROLE_ARN,
-                    Handler=handler,
-                    Code=dict(ZipFile=bytes_content),
-                )
-                print(f"Created new Lambda function: {function_name}")
-            else:
-                # Unexpected error
-                raise
-
-        # Print the response
-        print(json.dumps(response, indent=2, default=str))
-
-        return True
-    except Exception as e:
-        print(f"Error deploying Lambda function: {str(e)}")
+        bytes_content = zip_file.read_bytes()
+    except FileNotFoundError:
+        print(f"Error reading ZIP file: {zip_file}")
         return False
+
+    try:
+        lambda_client.get_function(FunctionName=function_name)  # type: ignore
+
+        # If we reach here, the function exists, so we update it
+        response = lambda_client.update_function_code(  # type: ignore
+            FunctionName=function_name, ZipFile=bytes_content
+        )
+        print(f"Updated existing Lambda function: {function_name}")
+
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ResourceNotFoundException":  # type: ignore
+            # The function doesn't exist, so we create it
+            response = lambda_client.create_function(  # type: ignore
+                FunctionName=function_name,
+                Runtime=lambda_runtime,
+                Role=settings.LAMBDA_ROLE_ARN,
+                Handler=handler,
+                Code=dict(ZipFile=bytes_content),
+            )
+            print(f"Created new Lambda function: {function_name}")
+        else:
+            # Unexpected error
+            print(f"Error deploying Lambda function: {str(e)}")
+            return False
+
+    # Print the response
+    print(json.dumps(response, indent=2, default=str))
+
+    return True
