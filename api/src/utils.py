@@ -1,33 +1,36 @@
 from __future__ import annotations
 
 import asyncio
-import os
+import subprocess
 from dataclasses import dataclass
 
 
 @dataclass
 class ProcessResult:
     exit_code: int
-    stdout: bytes
-    stderr: bytes
+    stdout: str
+    stderr: str
 
 
 async def run_async_subprocess(command: str):
-    proc = await asyncio.create_subprocess_shell(
+    process = subprocess.Popen(
         command,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        env=os.environ.copy(),
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,  # This makes the output strings instead of bytes
     )
 
-    stdout, stderr = await proc.communicate()
+    # Use asyncio to wait for the process to complete
+    loop = asyncio.get_running_loop()
+    stdout, stderr = await loop.run_in_executor(None, process.communicate)
 
-    if proc.returncode is None:
-        proc.terminate()
+    if process.returncode is None:
+        process.terminate()
         raise Exception(f"Process '{command!r}' was terminated")
 
     return ProcessResult(
-        exit_code=proc.returncode,
+        exit_code=process.returncode,
         stdout=stdout,
         stderr=stderr,
     )
