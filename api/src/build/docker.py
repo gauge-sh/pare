@@ -53,7 +53,7 @@ async def build_and_publish_image_to_ecr(
         # --push here assumes that we have already authenticated with ECR
         # TODO fix abs docker path
         result = await run_async_subprocess(
-            f'/usr/bin/docker build --push -t {ecr_image_name} --build-arg="PYTHON_VERSION={deploy_config.python_version}"{tmp_dir}'
+            f'/usr/bin/docker build --push -t {ecr_image_name} --build-arg="PYTHON_VERSION={deploy_config.python_version}" {tmp_dir}'
         )
         print(result.stdout)
         print(result.stderr)
