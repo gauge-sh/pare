@@ -51,10 +51,13 @@ async def build_and_publish_image_to_ecr(
         tag = f"{deploy_config.git_hash}-{deploy_config.python_version}"
         ecr_image_name = build_ecr_image_name(repo_name, tag)
         # --push here assumes that we have already authenticated with ECR
-        depot_bin_absolute_path = Path.home() / ".depot" / "bin" / "depot"
+        # TODO fix abs docker path
         result = await run_async_subprocess(
-            f"{depot_bin_absolute_path} build --push -t {ecr_image_name} ."
+            f"/usr/bin/docker build -t {ecr_image_name} ."
         )
+        print(result.stdout)
+        print(result.stderr)
+        result = await run_async_subprocess(f"/usr/bin/docker push {ecr_image_name}")
         print(result.stdout)
         print(result.stderr)
         return ECRBuildResult(exit_code=result.exit_code, image_name=ecr_image_name)
