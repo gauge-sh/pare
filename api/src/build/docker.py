@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from src import settings
+from src.transform import build_lambda_handler
 from src.utils import run_async_subprocess
 
 if TYPE_CHECKING:
@@ -45,6 +46,10 @@ async def build_and_publish_image_to_ecr(
         # write requirements.txt
         requirements = tmp_dir / "requirements.txt"
         requirements.write_text("\n".join(service_config.requirements))
+
+        # lambda function
+        lambda_function = tmp_dir / "lambda_function.py"
+        build_lambda_handler(service_config.path, lambda_function)
 
         # build and push image
         repo_name = f"{service_config.name}-{user.id}"
