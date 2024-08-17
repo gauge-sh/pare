@@ -28,7 +28,12 @@ class ECRBuildResult:
 
 
 async def build_and_publish_image_to_ecr(
-    user: User, bundle: Path, service_config: ServiceConfig, deploy_config: DeployConfig
+    user: User,
+    bundle: Path,
+    repo_name: str,
+    tag: str,
+    service_config: ServiceConfig,
+    deploy_config: DeployConfig,
 ) -> ECRBuildResult:
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
@@ -53,8 +58,6 @@ async def build_and_publish_image_to_ecr(
         build_lambda_handler(service_config.path, lambda_function)
 
         # build and push image
-        repo_name = f"{service_config.name}-{user.id}"
-        tag = f"{deploy_config.git_hash}-{deploy_config.python_version}"
         ecr_image_name = build_ecr_image_name(repo_name, tag)
         # --push here assumes that we have already authenticated with ECR
         # TODO fix abs docker path

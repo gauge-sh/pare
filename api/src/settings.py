@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from environs import Env
 
@@ -32,6 +33,23 @@ DATABASE_URL: str = (
 LAMBDA_ROLE_ARN: str = env.str("LAMBDA_ROLE_ARN")
 AWS_DEFAULT_REGION: str = env.str("AWS_DEFAULT_REGION", "us-east-1")
 AWS_ACCOUNT_ID: str = env.str("AWS_ACCOUNT_ID")
+
+ECR_REPO_POLICY: dict[str, Any] = {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "LambdaECRImageRetrievalPolicy",
+            "Effect": "Allow",
+            "Principal": {"Service": "lambda.amazonaws.com"},
+            "Action": ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"],
+            "Condition": {
+                "StringLike": {
+                    "aws:sourceArn": f"arn:aws:lambda:{AWS_DEFAULT_REGION}:{AWS_ACCOUNT_ID}:function:*"
+                }
+            },
+        }
+    ],
+}
 
 PARE_ATOMIC_DEPLOYMENT_HEADER: str = env.str(
     "PARE_ATOMIC_DEPLOYMENT_HEADER", "X-Pare-Atomic-Deployment"

@@ -23,6 +23,32 @@ def translate_python_version_to_lambda_runtime(python_version: str) -> str:
     return runtime_version
 
 
+def create_ecr_repository(repository_name: str) -> bool:
+    ecr_client = boto3.client("ecr")
+
+    try:
+        ecr_client.create_repository(
+            repositoryName=repository_name,
+            imageScanningConfiguration={"scanOnPush": True},
+            encryptionConfiguration={"encryptionType": "AES256"},
+        )
+        print(f"Repository '{repository_name}' created successfully.")
+        ecr_client.set_repository_policy(
+            repositoryName=repository_name,
+            policyText=json.dumps(settings.ECR_REPO_POLICY),
+        )
+        print(f"Repository policy set for '{repository_name}'")
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "RepositoryAlreadyExistsException":  # type: ignore
+            print(f"Repository '{repository_name}' already exists.")
+            return True
+        else:
+            print(f"An error occurred: {e}")
+            return False
+
+    return True
+
+
 async def deploy_python_lambda_function_from_ecr(
     function_name: str,
     image_name: str,

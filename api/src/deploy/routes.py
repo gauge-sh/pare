@@ -15,7 +15,7 @@ from src.build import build_and_publish_image_to_ecr, unzip_file, write_to_zipfi
 from src.constants import API_VERSION
 from src.core.models import DeployConfig, ServiceConfig
 from src.db import get_db
-from src.deploy import deploy_python_lambda_function_from_ecr
+from src.deploy import create_ecr_repository, deploy_python_lambda_function_from_ecr
 from src.middleware import get_user
 from src.models import Deployment, Service, User
 
@@ -29,8 +29,12 @@ UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 UNZIPPED_BUNDLE_DIR = "unzipped_bundle"
 
 
-def build_lambda_function_name(user: User, service_name: str) -> str:
+def build_ecr_repo_name(user: User, service_name: str) -> str:
     return f"{user.username}__{service_name}"
+
+
+def build_lambda_function_name(repo_name: str, tag: str) -> str:
+    return f"{repo_name}__{tag}"
 
 
 async def deploy_image(
@@ -39,17 +43,25 @@ async def deploy_image(
     deploy_config: DeployConfig,
     user: User,
 ) -> bool:
+    repo_name = build_ecr_repo_name(user, service_config.name)
+    tag = deploy_config.git_hash
+    repo_created = create_ecr_repository(repo_name)
+    if not repo_created:
+        print(f"Failed to create ECR repository for {repo_name}")
+        return False
     build_result = await build_and_publish_image_to_ecr(
-        user=user,
         bundle=bundle_dir,
+        repo_name=repo_name,
+        tag=tag,
         service_config=service_config,
         deploy_config=deploy_config,
     )
     if build_result.exit_code != 0:
+        print(f"Failed to build and publish image for {repo_name}:{tag}")
         return False
 
     return await deploy_python_lambda_function_from_ecr(
-        function_name=build_lambda_function_name(user, service_config.name),
+        function_name=build_lambda_function_name(repo_name, tag),
         image_name=build_result.image_name,
     )
 
@@ -63,6 +75,8 @@ async def deploy(
 ):
     try:
         deploy_config = DeployConfig(**json.loads(json_data))
+        # TODO: more careful handling here
+        deploy_config.git_hash = deploy_config.git_hash[:8]
     except Exception:
         raise HTTPException(status_code=422, detail="Couldn't process deployment data.")
 
