@@ -30,7 +30,7 @@ UNZIPPED_BUNDLE_DIR = "unzipped_bundle"
 
 
 def build_lambda_function_name(user: User, service_name: str) -> str:
-    return f"{user.username}/{service_name}"
+    return f"{user.username}__{service_name}"
 
 
 async def deploy_image(

@@ -122,7 +122,7 @@ async def delete_lambda(
 
     try:
         # Delete the Lambda function
-        lambda_function_name = f"{service.user.username}/{service.name}"
+        lambda_function_name = f"{service.user.username}__{service.name}"
         response = lambda_client.delete_function(FunctionName=lambda_function_name)  # type: ignore
 
         # Check if the deletion was successful
