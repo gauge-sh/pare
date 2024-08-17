@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from sqlalchemy import select
 from typing_extensions import Annotated
 
 from src.build import build_and_publish_image_to_ecr, unzip_file, write_to_zipfile
@@ -62,10 +63,19 @@ async def deploy(
         raise HTTPException(status_code=422, detail="Couldn't process deployment data.")
 
     async with db as session:
-        # TODO: handle existing deployment
-        deployment = Deployment(user_id=user.id, git_hash=deploy_config.git_hash)
-        session.add(deployment)
-        await session.commit()
+        deployment = (
+            await session.execute(
+                select(Deployment).filter(
+                    Deployment.user_id == user.id,
+                    Deployment.git_hash == deploy_config.git_hash,
+                )
+            )
+        ).scalar()
+
+        if not deployment:
+            deployment = Deployment(user_id=user.id, git_hash=deploy_config.git_hash)
+            session.add(deployment)
+            await session.commit()
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
@@ -92,14 +102,26 @@ async def deploy(
         # Assuming that 'gather' has preserved the order
         succeeded: list[str] = []
         failed: list[str] = []
+        # TODO: make batch query up-front for existence check
         for i, deploy_succeeded in enumerate(deploy_results):
             if deploy_succeeded:
                 async with db as session:
-                    service = Service(
-                        deployment_id=deployment.id, name=deploy_config.services[i].name
-                    )
-                    session.add(service)
-                    await session.commit()
+                    service = (
+                        await session.execute(
+                            select(Service).filter(
+                                Service.deployment_id == deployment.id,
+                                Service.name == deploy_config.services[i].name,
+                            )
+                        )
+                    ).scalar()
+
+                    if not service:
+                        service = Service(
+                            deployment_id=deployment.id,
+                            name=deploy_config.services[i].name,
+                        )
+                        session.add(service)
+                        await session.commit()
                 succeeded.append(deploy_config.services[i].name)
             else:
                 failed.append(deploy_config.services[i].name)

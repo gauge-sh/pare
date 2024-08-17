@@ -114,8 +114,9 @@ async def list_lambda_info(
 
 
 @router.delete("/delete/{service_name}/")
-def delete_lambda(
+async def delete_lambda(
     service: Service = Depends(service_for_user),
+    db: AsyncSession = Depends(get_db),
 ) -> Response:
     lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
@@ -125,6 +126,9 @@ def delete_lambda(
 
         # Check if the deletion was successful
         if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
+            async with db as session:
+                await session.delete(service)
+                await session.commit()
             return JSONResponse(
                 content={
                     "message": f"Lambda function '{service.name}' deleted successfully"
