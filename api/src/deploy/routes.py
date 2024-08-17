@@ -126,4 +126,14 @@ async def deploy(
             else:
                 failed.append(deploy_config.services[i].name)
 
+        if failed:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "succeeded": succeeded,
+                    "failed": failed,
+                    "message": "Some services failed to deploy",
+                },
+            )
+
         return {"succeeded": succeeded, "failed": failed}
