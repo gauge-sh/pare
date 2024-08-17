@@ -30,11 +30,11 @@ UNZIPPED_BUNDLE_DIR = "unzipped_bundle"
 
 
 def build_ecr_repo_name(user: User, service_name: str) -> str:
-    return f"{user.username}__{service_name}"
+    return f"{user.username}_{service_name}"
 
 
 def build_lambda_function_name(repo_name: str, tag: str) -> str:
-    return f"{repo_name}__{tag}"
+    return f"{repo_name}_{tag}"
 
 
 async def deploy_image(

@@ -123,7 +123,7 @@ async def delete_lambda(
     try:
         # Delete the Lambda function
         lambda_function_name = (
-            f"{service.user.username}__{service.name}__{service.deployment.git_hash}"
+            f"{service.user.username}_{service.name}_{service.deployment.git_hash}"
         )
         response = lambda_client.delete_function(FunctionName=lambda_function_name)  # type: ignore
 
