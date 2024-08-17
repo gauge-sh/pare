@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from functools import lru_cache
 
 from pare import settings
-
-FALLBACK_LATEST_SENTINEL = "latest"
+from pare.cli.console import log_error, log_warning
 
 # TODO: build a Client singleton to handle all requests
 
@@ -19,7 +19,11 @@ def get_current_git_hash() -> str:
     try:
         # verify we are in a clean git state
         subprocess.check_call(["git", "diff", "--quiet"])
+    except subprocess.CalledProcessError:
+        log_warning("Git state is not clean. Using the last commit hash.")
 
+    try:
         return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()
     except subprocess.CalledProcessError:
-        return FALLBACK_LATEST_SENTINEL
+        log_error("Pare failed to get the current git hash.")
+        sys.exit(1)
