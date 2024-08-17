@@ -24,7 +24,7 @@ def translate_python_version_to_lambda_runtime(python_version: str) -> str:
 
 
 def create_ecr_repository(repository_name: str) -> bool:
-    ecr_client = boto3.client("ecr")
+    ecr_client = boto3.client("ecr", region_name=settings.AWS_DEFAULT_REGION)
 
     try:
         ecr_client.create_repository(
