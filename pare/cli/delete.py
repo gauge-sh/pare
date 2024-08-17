@@ -18,6 +18,7 @@ def delete_function(function_name: str) -> None:
                 settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
             },
         )
+        print(response.text)
         response.raise_for_status()
     except requests.HTTPError as e:
         log_error(f"Failed to delete function. Status code: {e.response.status_code}")

@@ -64,6 +64,10 @@ async def service_for_user(
         return matching_service
 
 
+def get_lambda_function_name(service: Service) -> str:
+    return f"{service.deployment.user.username}_{service.name}_{service.deployment.git_hash}"
+
+
 class DeploymentSchema(BaseModel):
     git_hash: str
     created_at: datetime
@@ -122,10 +126,9 @@ async def delete_lambda(
 
     try:
         # Delete the Lambda function
-        lambda_function_name = (
-            f"{service.user.username}_{service.name}_{service.deployment.git_hash}"
-        )
-        response = lambda_client.delete_function(FunctionName=lambda_function_name)  # type: ignore
+        response = lambda_client.delete_function(
+            FunctionName=get_lambda_function_name(service)
+        )  # type: ignore
 
         # Check if the deletion was successful
         if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
@@ -170,7 +173,7 @@ def invoke_lambda(
 
     try:
         response = lambda_client.invoke(  # type: ignore
-            FunctionName=service.name,
+            FunctionName=get_lambda_function_name(service),
             InvocationType="RequestResponse",
             Payload=request_body,
         )
