@@ -12,7 +12,6 @@ from src.utils import run_async_subprocess
 
 if TYPE_CHECKING:
     from src.core.models import DeployConfig, ServiceConfig
-    from src.models import User
 
 LAMBDA_DOCKERFILE_PATH = Path(__file__).parent / "Dockerfile.py_lambda"
 
@@ -28,7 +27,6 @@ class ECRBuildResult:
 
 
 async def build_and_publish_image_to_ecr(
-    user: User,
     bundle: Path,
     repo_name: str,
     tag: str,
