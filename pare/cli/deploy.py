@@ -31,13 +31,13 @@ class DeployHandler:
             f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_DEPLOY_URL_PATH}"
         )
         self.api_key = api_key or settings.PARE_API_KEY
-        self.atomic_deployment = get_current_git_hash()
+        self.git_hash = get_current_git_hash()
 
     @property
     def headers(self) -> dict[str, str]:
         return {
             settings.PARE_API_KEY_HEADER: self.api_key,
-            settings.PARE_ATOMIC_DEPLOYMENT_HEADER: self.atomic_deployment,
+            settings.PARE_ATOMIC_DEPLOYMENT_HEADER: self.git_hash,
         }
 
     def validate_file_paths(self) -> None:
@@ -124,7 +124,7 @@ class DeployHandler:
         self.validate_file_paths()
         services = self.register_services()
         deploy_config = DeployConfig(
-            git_hash="1234567890",
+            git_hash=self.git_hash,
             python_version=PYTHON_VERSION,
             services=services,
         )
