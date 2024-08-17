@@ -33,19 +33,18 @@ def create_ecr_repository(repository_name: str) -> bool:
             encryptionConfiguration={"encryptionType": "AES256"},
         )
         print(f"Repository '{repository_name}' created successfully.")
-        ecr_client.set_repository_policy(
-            repositoryName=repository_name,
-            policyText=json.dumps(settings.ECR_REPO_POLICY),
-        )
-        print(f"Repository policy set for '{repository_name}'")
     except ClientError as e:
         if e.response["Error"]["Code"] == "RepositoryAlreadyExistsException":  # type: ignore
             print(f"Repository '{repository_name}' already exists.")
-            return True
         else:
             print(f"An error occurred: {e}")
             return False
 
+    ecr_client.set_repository_policy(
+        repositoryName=repository_name,
+        policyText=json.dumps(settings.ECR_REPO_POLICY),
+    )
+    print(f"Repository policy set for '{repository_name}'")
     return True
 
 
