@@ -29,6 +29,10 @@ UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
 UNZIPPED_BUNDLE_DIR = "unzipped_bundle"
 
 
+def build_lambda_function_name(user: User, service_name: str) -> str:
+    return f"{user.username}/{service_name}"
+
+
 async def deploy_image(
     bundle_dir: Path,
     service_config: ServiceConfig,
@@ -45,7 +49,7 @@ async def deploy_image(
         return False
 
     return await deploy_python_lambda_function_from_ecr(
-        function_name=service_config.name,
+        function_name=build_lambda_function_name(user, service_config.name),
         image_name=build_result.image_name,
     )
 
