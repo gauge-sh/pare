@@ -126,9 +126,9 @@ async def delete_lambda(
 
     try:
         # Delete the Lambda function
-        response = lambda_client.delete_function(
+        response = lambda_client.delete_function(  # type: ignore
             FunctionName=get_lambda_function_name(service)
-        )  # type: ignore
+        )
 
         # Check if the deletion was successful
         if response["ResponseMetadata"]["HTTPStatusCode"] == 204:

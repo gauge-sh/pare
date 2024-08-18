@@ -27,7 +27,7 @@ def create_ecr_repository(repository_name: str) -> bool:
     ecr_client = boto3.client("ecr", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
     try:
-        ecr_client.create_repository(
+        ecr_client.create_repository(  # type: ignore
             repositoryName=repository_name,
             imageScanningConfiguration={"scanOnPush": True},
             encryptionConfiguration={"encryptionType": "AES256"},
@@ -40,7 +40,7 @@ def create_ecr_repository(repository_name: str) -> bool:
             print(f"An error occurred: {e}")
             return False
 
-    ecr_client.set_repository_policy(
+    ecr_client.set_repository_policy(  # type: ignore
         repositoryName=repository_name,
         policyText=json.dumps(settings.ECR_REPO_POLICY),
     )
