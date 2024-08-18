@@ -6,6 +6,7 @@ from rich.console import Console
 
 from pare.cli.delete import delete_function
 from pare.cli.deploy import DeployHandler
+from pare.client import get_current_git_hash
 from pare.login import login
 
 
@@ -14,19 +15,24 @@ def deploy(file_path_str: str) -> None:
     DeployHandler(file_paths=file_paths).deploy()
 
 
-def delete(function_name: str) -> None:
+def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
     console = Console()
-    if (
+    if not force and (
         console.input(
             f"You are about to delete your deployed function called [bold red]'{function_name}'[/bold red]. "
             "Type the function name to confirm: "
         )
-        == function_name
+        != function_name
     ):
-        delete_function(function_name)
-        console.print(f"[bold red]'{function_name}' deleted.[/bold red]")
-    else:
         console.print("[bold white]Operation cancelled.[/bold white]")
+        return
+
+    if not git_hash:
+        git_hash = get_current_git_hash()
+    delete_function(function_name, git_hash=git_hash)
+    console.print(
+        f"[bold red]'{function_name}' (git hash: '{git_hash}') deleted.[/bold red]"
+    )
 
 
 def status() -> None:
@@ -47,14 +53,26 @@ def create_parser() -> argparse.ArgumentParser:
 
     parser_deploy = subparsers.add_parser("deploy", help="Deploy the application.")
     parser_deploy.add_argument(
-        "file_paths", type=str, help="A comma-separated list of file paths to deploy."
+        "file_paths", nargs="+", type=str, help="One or more file paths to deploy."
     )
 
-    subparsers.add_parser("status", help="Check the status of the application.")
+    subparsers.add_parser("status", help="Check the status of your deployed functions.")
 
     parser_delete = subparsers.add_parser("delete", help="Delete a deployed function.")
     parser_delete.add_argument(
         "function_name", type=str, help="The name of the function to delete."
+    )
+    parser_delete.add_argument(
+        "-g",
+        "--git-hash",
+        nargs="?",
+        type=str,
+        help="The git hash of the function to delete.",
+    )
+    parser_delete.add_argument(
+        "--force",
+        action="store_true",
+        help="Skip the confirmation prompt and delete the function.",
     )
 
     return parser
@@ -68,7 +86,7 @@ def main() -> None:
     elif args.command == "status":
         status()
     elif args.command == "delete":
-        delete(args.function_name)
+        delete(args.function_name, git_hash=args.git_hash, force=args.force)
     elif args.command == "login":
         login()
     else:
