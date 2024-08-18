@@ -1,14 +1,25 @@
 from __future__ import annotations
 
 import argparse
+import sys
 
 from rich.console import Console
 
+from pare import settings
 from pare.cli.delete import delete_function
 from pare.cli.deploy import DeployHandler
 from pare.cli.status import show_status
 from pare.client import get_current_git_hash
 from pare.login import login
+
+
+def verify_logged_in() -> None:
+    if not settings.PARE_API_KEY:
+        console = Console()
+        console.print(
+            "[bold red]Error:[/bold red] Pare API key not found. Try 'pare login' first."
+        )
+        sys.exit(1)
 
 
 def parse_env_vars(env_vars: list[str]) -> dict[str, str]:
@@ -23,6 +34,7 @@ def parse_env_vars(env_vars: list[str]) -> dict[str, str]:
 
 
 def deploy(file_paths: list[str], env_vars: list[str]) -> None:
+    verify_logged_in()
     environment_variables = parse_env_vars(env_vars)
     DeployHandler(
         file_paths=file_paths, environment_variables=environment_variables
@@ -30,6 +42,7 @@ def deploy(file_paths: list[str], env_vars: list[str]) -> None:
 
 
 def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
+    verify_logged_in()
     console = Console()
     if not force and (
         console.input(
@@ -50,6 +63,7 @@ def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
 
 
 def status() -> None:
+    verify_logged_in()
     show_status()
 
 

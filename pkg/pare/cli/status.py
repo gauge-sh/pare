@@ -17,6 +17,7 @@ def show_status():
     headers = {settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY}
     try:
         response = requests.get(list_url, headers=headers)
+        response.raise_for_status()
         display_status_table(response.json())
     except Exception as e:
         console = Console()
