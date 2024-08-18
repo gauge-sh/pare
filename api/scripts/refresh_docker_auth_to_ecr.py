@@ -17,7 +17,7 @@ class AuthInfo:
 
 
 def get_ecr_auth_token(region: str = "us-east-1") -> AuthInfo:
-    ecr_client = boto3.client("ecr", region_name=region)
+    ecr_client = boto3.client("ecr", region_name=region)  # type: ignore
 
     try:
         response = ecr_client.get_authorization_token()

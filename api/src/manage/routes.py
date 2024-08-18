@@ -122,7 +122,7 @@ async def delete_lambda(
     service: Service = Depends(service_for_user),
     db: AsyncSession = Depends(get_db),
 ) -> Response:
-    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
     try:
         # Delete the Lambda function
@@ -169,7 +169,7 @@ def invoke_lambda(
     request_body: Any = Body(),
     service: Service = Depends(service_for_user),
 ) -> Response:
-    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
     try:
         response = lambda_client.invoke(  # type: ignore

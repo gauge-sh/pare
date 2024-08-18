@@ -24,7 +24,7 @@ def translate_python_version_to_lambda_runtime(python_version: str) -> str:
 
 
 def create_ecr_repository(repository_name: str) -> bool:
-    ecr_client = boto3.client("ecr", region_name=settings.AWS_DEFAULT_REGION)
+    ecr_client = boto3.client("ecr", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
     try:
         ecr_client.create_repository(
@@ -53,7 +53,7 @@ async def deploy_python_lambda_function_from_ecr(
     image_name: str,
 ):
     # Initialize the Lambda client
-    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
     try:
         lambda_client.get_function(FunctionName=function_name)  # type: ignore
@@ -94,7 +94,7 @@ def deploy_python_lambda_function_from_zip(
     handler: str = "lambda_function.lambda_handler",
 ):
     # Initialize the Lambda client
-    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)
+    lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
     lambda_runtime = translate_python_version_to_lambda_runtime(python_version)
 
     try:
