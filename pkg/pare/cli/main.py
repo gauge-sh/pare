@@ -101,7 +101,7 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
     if args.command == "deploy":
-        deploy(args.file_paths, env_vars=args.env_vars)
+        deploy(args.file_paths, env_vars=args.env_vars or [])
     elif args.command == "status":
         status()
     elif args.command == "delete":
