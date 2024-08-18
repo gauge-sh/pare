@@ -23,10 +23,12 @@ class DeployHandler:
     def __init__(
         self,
         file_paths: list[str],
+        environment_variables: dict[str, str],
         deploy_url: str | None = None,
         api_key: str | None = None,
     ) -> None:
         self.file_paths = {Path(file_path) for file_path in file_paths}
+        self.environment_variables = environment_variables
         self.deploy_url = deploy_url or (
             f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_DEPLOY_URL_PATH}"
         )
@@ -127,6 +129,7 @@ class DeployHandler:
             git_hash=self.git_hash,
             python_version=PYTHON_VERSION,
             services=services,
+            environment_variables=self.environment_variables,
         )
         with tempfile.TemporaryDirectory() as temp_dir:
             zip_path = self.bundle(temp_dir)

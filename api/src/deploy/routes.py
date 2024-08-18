@@ -63,6 +63,7 @@ async def deploy_image(
     return await deploy_python_lambda_function_from_ecr(
         function_name=build_lambda_function_name(repo_name, tag),
         image_name=build_result.image_name,
+        environment_variables=deploy_config.environment_variables,
     )
 
 

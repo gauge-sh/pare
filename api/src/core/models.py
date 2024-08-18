@@ -12,4 +12,5 @@ class ServiceConfig(BaseModel):
 class DeployConfig(BaseModel):
     git_hash: str
     python_version: str
+    environment_variables: dict[str, str] = Field(default_factory=dict)
     services: list[ServiceConfig] = Field(default_factory=list)

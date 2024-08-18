@@ -11,8 +11,22 @@ from pare.client import get_current_git_hash
 from pare.login import login
 
 
-def deploy(file_paths: list[str]) -> None:
-    DeployHandler(file_paths=file_paths).deploy()
+def parse_env_vars(env_vars: list[str]) -> dict[str, str]:
+    environment_variables: dict[str, str] = {}
+    try:
+        for env_var in env_vars:
+            key, value = env_var.split("=")
+            environment_variables[key] = value
+    except ValueError:
+        raise ValueError("Environment variables must be in the format KEY=VALUE")
+    return environment_variables
+
+
+def deploy(file_paths: list[str], env_vars: list[str]) -> None:
+    environment_variables = parse_env_vars(env_vars)
+    DeployHandler(
+        file_paths=file_paths, environment_variables=environment_variables
+    ).deploy()
 
 
 def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
@@ -53,6 +67,13 @@ def create_parser() -> argparse.ArgumentParser:
     parser_deploy.add_argument(
         "file_paths", nargs="+", type=str, help="One or more file paths to deploy."
     )
+    parser_deploy.add_argument(
+        "-e",
+        "--env",
+        action="append",
+        dest="env_vars",
+        help="Specify an environment variable in the format KEY=VALUE. Can be used multiple times.",
+    )
 
     subparsers.add_parser("status", help="Check the status of your deployed functions.")
 
@@ -80,7 +101,7 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
     if args.command == "deploy":
-        deploy(args.file_paths)
+        deploy(args.file_paths, env_vars=args.env_vars)
     elif args.command == "status":
         status()
     elif args.command == "delete":
