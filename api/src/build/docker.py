@@ -4,6 +4,7 @@ import tempfile
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
+from shutil import copytree
 from typing import TYPE_CHECKING
 
 from src import settings
@@ -42,10 +43,7 @@ async def build_and_publish_image_to_ecr(
 
         # copy bundle contents to build root (expected by Dockerfile)
         build_path = tmp_dir / "build-root"
-        build_path.mkdir()
-        bundle_files = list(bundle.glob("*"))
-        for file in bundle_files:
-            file.rename(build_path / file.name)
+        copytree(bundle, build_path)
 
         # write requirements.txt
         requirements = tmp_dir / "requirements.txt"
