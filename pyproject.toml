@@ -5,7 +5,7 @@ authors = [
     { name = "Caelean Barnes", email = "caeleanb@gmail.com" },
     { name = "Evan Doyle", email = "evanmdoyle@gmail.com" },
 ]
-description = "Effortless serverless, in your own cloud"
+description = "Effortless serverless Python"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
