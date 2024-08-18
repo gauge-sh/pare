@@ -6,6 +6,7 @@ from rich.console import Console
 
 from pare.cli.delete import delete_function
 from pare.cli.deploy import DeployHandler
+from pare.cli.status import show_status
 from pare.client import get_current_git_hash
 from pare.login import login
 
@@ -35,12 +36,7 @@ def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
 
 
 def status() -> None:
-    # how should this work?
-    # hit list API for services
-    # show a table using Rich
-    """Check the status of the application."""
-    print("Checking the status of the application...")
-    print("Status checked")
+    show_status()
 
 
 def create_parser() -> argparse.ArgumentParser:
