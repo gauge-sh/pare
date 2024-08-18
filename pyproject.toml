@@ -45,6 +45,13 @@ dev = [
     "tach==0.10.0",
     "boto3-stubs-lite==1.34.145",
     "boto3-stubs==1.34.145",
+    # unpinned for API server
+    "gunicorn",
+    "python-multipart",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg",
+    "boto3",
     # Setup
     "pip==24.0",
     # Code Quality
