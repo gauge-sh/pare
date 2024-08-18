@@ -8,8 +8,8 @@ from typing import Any
 import requests
 
 from pare import settings
-from pare.cli.console import log_task
-from pare.cli.constants import GITHUB_CLIENT_ID
+from pare.console import log_task
+from pare.constants import GITHUB_CLIENT_ID
 
 
 def parse_response(response: requests.Response) -> dict[str, Any]:

@@ -5,7 +5,7 @@ import sys
 from functools import lru_cache
 
 from pare import settings
-from pare.cli.console import log_error, log_warning
+from pare.console import log_error, log_warning
 
 # TODO: build a Client singleton to handle all requests
 

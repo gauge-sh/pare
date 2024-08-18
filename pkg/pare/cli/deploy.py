@@ -13,8 +13,8 @@ import requests
 from rich.console import Console
 
 from pare import settings
-from pare.cli.console import log_error, log_task
 from pare.client import get_current_git_hash
+from pare.console import log_error, log_task
 from pare.constants import PYTHON_VERSION
 from pare.models import DeployConfig, ServiceConfig, ServiceRegistration
 

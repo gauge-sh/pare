@@ -5,8 +5,8 @@ import sys
 import requests
 
 from pare import settings
-from pare.cli.console import log_error
 from pare.client import get_current_git_hash
+from pare.console import log_error
 
 
 def delete_function(function_name: str) -> None:
