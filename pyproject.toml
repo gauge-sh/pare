@@ -91,10 +91,12 @@ exclude = [
     "**/__pycache__",
     "**/.venv",
     "**/tests",
+    "**/alembic",
     "api/src/transform/template.py",
 ]
+executionEnvironments = [{ "root" = "api" }, { "root" = "pkg" }]
 strict = ["."]
-pythonVersion = "3.8"
+pythonVersion = "3.12"
 
 [project.scripts]
 pare = "pare.cli.main:main"
@@ -105,5 +107,5 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["pkg"]
 include = ["pare*"]
