@@ -13,11 +13,11 @@ from pare.console import log_error, log_warning
 @lru_cache(maxsize=1)
 def get_current_git_hash() -> str:
     if settings.PARE_GIT_HASH:
-        if len(settings.PARE_GIT_HASH) > 8:
+        if len(settings.PARE_GIT_HASH) > 7:
             log_warning(
-                "PARE_GIT_HASH is longer than 8 characters. Using the first 8 characters."
+                "PARE_GIT_HASH is longer than 7 characters. Using the first 7 characters."
             )
-        return settings.PARE_GIT_HASH[:8]
+        return settings.PARE_GIT_HASH[:7]
 
     # if the git hash is not provided, we will try to get it from the current git state
     try:
@@ -28,7 +28,7 @@ def get_current_git_hash() -> str:
 
     try:
         return (
-            subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()[:8]
+            subprocess.check_output(["git", "rev-parse", "HEAD"]).decode().strip()[:7]
         )
     except subprocess.CalledProcessError:
         log_error("Pare failed to get the current git hash.")

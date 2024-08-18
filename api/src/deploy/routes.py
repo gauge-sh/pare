@@ -77,7 +77,7 @@ async def deploy(
     try:
         deploy_config = DeployConfig(**json.loads(json_data))
         # TODO: more careful handling here
-        deploy_config.git_hash = deploy_config.git_hash[:8]
+        deploy_config.git_hash = deploy_config.git_hash[:7]
     except Exception:
         raise HTTPException(status_code=422, detail="Couldn't process deployment data.")
 
