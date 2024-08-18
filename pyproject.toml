@@ -100,6 +100,7 @@ exclude = [
     "**/tests",
     "**/alembic",
     "api/src/transform/template.py",
+    "api/scripts",
 ]
 executionEnvironments = [{ "root" = "api" }, { "root" = "pkg" }]
 strict = ["."]
