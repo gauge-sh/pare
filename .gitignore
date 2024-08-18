@@ -123,6 +123,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
 .venv
 env/
 venv/
@@ -165,3 +166,5 @@ cython_debug/
 .env.leave
 .DS_Store
 .pre-commit-config.yaml
+.token
+.pare

@@ -27,12 +27,22 @@ pip install --upgrade pip pip-tools uv
 uv pip compile $API_DIR/requirements.in -o $API_DIR/requirements.txt
 uv pip install -r $API_DIR/requirements.txt
 
+if [ ! -d /home/ec2-user/pare-scripts ]; then
+  mkdir /home/ec2-user/pare-scripts
+fi
+cp -r $API_DIR/scripts/* /home/ec2-user/pare-scripts
+
 cd $API_DIR
 
 if pgrep gunicorn; then
   pkill gunicorn
 fi
 
+echo "Running migrations..."
+alembic upgrade head
+echo "Done with migrations."
+
+export PYTHONUNBUFFERED=1
 nohup gunicorn \
   -k uvicorn.workers.UvicornWorker \
   -b 0.0.0.0:8000 \

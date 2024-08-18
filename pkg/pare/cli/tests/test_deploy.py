@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pare.cli.deploy import DeployHandler
+from pare.models import ServiceConfig
 
 
 @pytest.fixture
@@ -51,7 +52,7 @@ def test_bundle(deploy_handler: DeployHandler) -> None:
 
 
 @patch.object(DeployHandler, "validate_file_paths")
-@patch.object(DeployHandler, "register_deployments")
+@patch.object(DeployHandler, "register_services")
 @patch.object(DeployHandler, "bundle")
 @patch.object(DeployHandler, "upload")
 def test_deploy(
@@ -61,7 +62,9 @@ def test_deploy(
     mock_validate: MagicMock,
     deploy_handler: DeployHandler,
 ) -> None:
-    mock_register.return_value = {"test_endpoint": {"function": "test_func"}}
+    mock_register.return_value = [
+        ServiceConfig(name="test", path="test", requirements=[])
+    ]
     mock_bundle.return_value = Path("test.zip")
 
     deploy_handler.deploy()

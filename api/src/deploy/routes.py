@@ -1,85 +1,157 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import tempfile
 from pathlib import Path
-from typing import Annotated  # type: ignore
+from typing import TYPE_CHECKING
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
+from sqlalchemy import select
+from typing_extensions import Annotated
 
-from src.build.python_lambda import install_deps_to_dir
-from src.build.zip import write_extended_zipfile, write_to_zipfile
+from src.build import build_and_publish_image_to_ecr, unzip_file, write_to_zipfile
 from src.constants import API_VERSION
-from src.deploy.lambda_deploy import deploy_python_lambda_function
-from src.transform import build_lambda_handler
+from src.core.models import DeployConfig, ServiceConfig
+from src.db import get_db
+from src.deploy import create_ecr_repository, deploy_python_lambda_function_from_ecr
+from src.middleware import get_user
+from src.models import Deployment, Service, User
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix=f"/{API_VERSION}")
 
 
-class DeploymentConfig(BaseModel):
-    name: str
-    path: str
-    python_version: str
-    requirements: list[str] = Field(default_factory=list)
-
-
 UPLOADED_BUNDLE_FILENAME = "uploaded_bundle.zip"
+UNZIPPED_BUNDLE_DIR = "unzipped_bundle"
+
+
+def build_ecr_repo_name(user: User, service_name: str) -> str:
+    return f"{user.username}_{service_name}"
+
+
+def build_lambda_function_name(repo_name: str, tag: str) -> str:
+    return f"{repo_name}_{tag}"
+
+
+async def deploy_image(
+    bundle_dir: Path,
+    service_config: ServiceConfig,
+    deploy_config: DeployConfig,
+    user: User,
+) -> bool:
+    repo_name = build_ecr_repo_name(user, service_config.name)
+    tag = deploy_config.git_hash
+    repo_created = create_ecr_repository(repo_name)
+    if not repo_created:
+        print(f"Failed to create ECR repository for {repo_name}")
+        return False
+    build_result = await build_and_publish_image_to_ecr(
+        bundle=bundle_dir,
+        repo_name=repo_name,
+        tag=tag,
+        service_config=service_config,
+        deploy_config=deploy_config,
+    )
+    if build_result.exit_code != 0:
+        print(f"Failed to build and publish image for {repo_name}:{tag}")
+        return False
+
+    return await deploy_python_lambda_function_from_ecr(
+        function_name=build_lambda_function_name(repo_name, tag),
+        image_name=build_result.image_name,
+    )
 
 
 @router.post("/deploy/")
-async def deploy_zip(
-    file: Annotated[UploadFile, File()],  # type: ignore
-    json_data: Annotated[str, Form()],  # type: ignore
+async def deploy(
+    file: Annotated[UploadFile, File()],
+    json_data: Annotated[str, Form()],
+    user: User = Depends(get_user),
+    db: AsyncSession = Depends(get_db),
 ):
     try:
-        deployment_data = json.loads(json_data)  # type: ignore
-        deployments: list[DeploymentConfig] = [
-            DeploymentConfig(
-                name=name,
-                path=deployment["reference"],
-                python_version=deployment["python_version"],
-                requirements=deployment["dependencies"],
-            )
-            for name, deployment in deployment_data.items()
-        ]
+        deploy_config = DeployConfig(**json.loads(json_data))
+        # TODO: more careful handling here
+        deploy_config.git_hash = deploy_config.git_hash[:8]
     except Exception:
-        raise HTTPException(
-            status_code=422, detail="Couldn't process deployments data."
-        )
+        raise HTTPException(status_code=422, detail="Couldn't process deployment data.")
+
+    async with db as session:
+        deployment = (
+            await session.execute(
+                select(Deployment).filter(
+                    Deployment.user_id == user.id,
+                    Deployment.git_hash == deploy_config.git_hash,
+                )
+            )
+        ).scalar()
+
+        if not deployment:
+            deployment = Deployment(user_id=user.id, git_hash=deploy_config.git_hash)
+            session.add(deployment)
+            await session.commit()
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         zipfile_path = tmp_dir / UPLOADED_BUNDLE_FILENAME
+        unzipped_bundle_path = tmp_dir / UNZIPPED_BUNDLE_DIR
         try:
             write_to_zipfile(await file.read(), output_path=zipfile_path)  # type: ignore
+            unzip_file(zipfile_path, unzipped_bundle_path)
         except ValueError as err:
             return JSONResponse(status_code=400, content={"error": str(err)})
-        for deployment in deployments:
-            # TODO: validate deployment name
-            build_path = tmp_dir / deployment.name
-            build_path.mkdir(parents=True, exist_ok=True)
-            build_lambda_handler(
-                symbol_path=deployment.path,
-                output_path=build_path / "lambda_function.py",
-            )
-            install_deps_to_dir(
-                dependencies=deployment.requirements,
-                python_version=deployment.python_version,
-                output_dir=build_path,
-            )
-            deployment_package_path = tmp_dir / f"{deployment.name}.zip"
-            write_extended_zipfile(
-                existing_zipfile=zipfile_path,
-                additional_paths=[build_path],
-                output_path=deployment_package_path,
+
+        deploy_results = await asyncio.gather(
+            *[
+                deploy_image(
+                    bundle_dir=unzipped_bundle_path,
+                    service_config=service,
+                    deploy_config=deploy_config,
+                    user=user,
+                )
+                for service in deploy_config.services
+            ]
+        )
+
+        # Assuming that 'gather' has preserved the order
+        succeeded: list[str] = []
+        failed: list[str] = []
+        # TODO: make batch query up-front for existence check
+        for i, deploy_succeeded in enumerate(deploy_results):
+            if deploy_succeeded:
+                async with db as session:
+                    service = (
+                        await session.execute(
+                            select(Service).filter(
+                                Service.deployment_id == deployment.id,
+                                Service.name == deploy_config.services[i].name,
+                            )
+                        )
+                    ).scalar()
+
+                    if not service:
+                        service = Service(
+                            deployment_id=deployment.id,
+                            name=deploy_config.services[i].name,
+                        )
+                        session.add(service)
+                        await session.commit()
+                succeeded.append(deploy_config.services[i].name)
+            else:
+                failed.append(deploy_config.services[i].name)
+
+        if failed:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "succeeded": succeeded,
+                    "failed": failed,
+                    "message": "Some services failed to deploy",
+                },
             )
 
-            deploy_python_lambda_function(
-                function_name=deployment.name,
-                zip_file=deployment_package_path,
-                python_version=deployment.python_version,
-            )
-            # TODO: after each deployment is done, update record in RDS
-        return {"status": "OK"}
+        return {"succeeded": succeeded, "failed": failed}

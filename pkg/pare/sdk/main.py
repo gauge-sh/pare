@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable
+from typing import Any, Callable, TypeVar
 
 import aiohttp
 import requests
+from typing_extensions import ParamSpec
 
 from pare import errors, settings
+from pare.client import get_current_git_hash
+from pare.models import ServiceRegistration
 
 
 @dataclass
@@ -19,8 +22,11 @@ class RemoteInvocationArguments:
 def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) -> Any:
     try:
         response = requests.post(
-            f"{settings.PARE_API_URL}/invoke/{function_name}/",
-            headers={"X-Client-Secret": settings.CLIENT_SECRET},
+            f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_INVOKE_URL_PATH}{function_name}/",
+            headers={
+                settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
+                settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
+            },
             json=json.dumps(asdict(arguments)),
         )
         response.raise_for_status()
@@ -41,8 +47,11 @@ async def async_invoke_endpoint(
     async with aiohttp.ClientSession() as session:
         try:
             async with session.post(
-                f"{settings.PARE_API_URL}/invoke/{function_name}/",
-                headers={"X-Client-Secret": settings.CLIENT_SECRET},
+                f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}/invoke/{function_name}/",
+                headers={
+                    settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY,
+                    settings.PARE_ATOMIC_DEPLOYMENT_HEADER: get_current_git_hash(),
+                },
                 json=json.dumps(asdict(arguments)),
             ) as response:
                 response.raise_for_status()
@@ -57,18 +66,18 @@ async def async_invoke_endpoint(
             )
 
 
-def endpoint(
-    name: str, python_version: str = "3.12", dependencies: list[str] = []
-) -> Callable[..., Any]:
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def endpoint(name: str, dependencies: list[str] = []) -> Callable[..., Any]:
     def endpoint_decorator(
-        function: Callable[..., Any],
-    ) -> Callable[..., Any]:
-        def _pare_register() -> tuple[str, dict[str, str | list[str]]]:
-            return name, {
-                "function": function.__name__,
-                "python_version": python_version,
-                "dependencies": dependencies,
-            }
+        function: Callable[P, R],
+    ) -> Callable[P, R]:
+        def _pare_register() -> ServiceRegistration:
+            return ServiceRegistration(
+                name=name, function=function.__name__, dependencies=dependencies
+            )
 
         function._pare_register = _pare_register  # pyright: ignore[reportFunctionMemberAccess]
 
@@ -99,7 +108,7 @@ def endpoint(
 
         function.as_lambda_function_url_handler = _as_lambda_handler  # pyright: ignore[reportFunctionMemberAccess]
 
-        def _invoke_fn(*args, **kwargs) -> Callable[..., Any]:  # type: ignore
+        def _invoke_fn(*args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
             return invoke_endpoint(
                 name,
                 RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
@@ -107,7 +116,7 @@ def endpoint(
 
         function.invoke = _invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
 
-        async def _async_invoke_fn(*args, **kwargs) -> Callable[..., Any]:  # type: ignore
+        async def _async_invoke_fn(*args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
             return await async_invoke_endpoint(
                 name,
                 RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore

@@ -1,11 +1,11 @@
 [project]
 name = "pare"
-version = "0.0.10"
+version = "0.2.0"
 authors = [
-  { name="Caelean Barnes", email="caeleanb@gmail.com" },
-  { name="Evan Doyle", email="evanmdoyle@gmail.com" },
+    { name = "Caelean Barnes", email = "caeleanb@gmail.com" },
+    { name = "Evan Doyle", email = "evanmdoyle@gmail.com" },
 ]
-description = "Effortless serverless, in your own cloud"
+description = "Effortless serverless Python"
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
@@ -42,9 +42,16 @@ dev = [
     "pydantic==2.8.2",
     "rich==13.7.1",
     "fastapi==0.111.1",
-    "tach==0.8.2",
-    "boto3-stubs-lite==1.34.145",
+    "tach==0.10.0",
+    "boto3==1.34.145",
     "boto3-stubs==1.34.145",
+    "boto3-stubs-lite==1.34.145",
+    # unpinned for API server
+    "gunicorn",
+    "python-multipart",
+    "sqlalchemy",
+    "alembic",
+    "asyncpg",
     # Setup
     "pip==24.0",
     # Code Quality
@@ -67,17 +74,19 @@ Issues = "https://github.com/gauge-sh/pare/issues"
 
 [tool.ruff]
 target-version = "py38"
-exclude = ["**/__pycache__", ".venv", "api/src/transform/template.py"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/alembic",
+    "api/src/transform/template.py",
+]
 lint.extend-select = ["I", "TCH", "UP"]
 
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-    "pydantic.BaseModel",
-    "pydantic.RootModel",
-]
+runtime-evaluated-base-classes = ["pydantic.BaseModel", "pydantic.RootModel"]
 runtime-evaluated-decorators = [
     "pydantic.dataclasses.dataclass",
     "dataclasses.dataclass",
@@ -85,9 +94,17 @@ runtime-evaluated-decorators = [
 exempt-modules = ["typing", "typing_extensions"]
 
 [tool.pyright]
-exclude = ["**/__pycache__", ".venv", "api/src/transform/template.py"]
+exclude = [
+    "**/__pycache__",
+    "**/.venv",
+    "**/tests",
+    "**/alembic",
+    "api/src/transform/template.py",
+    "api/scripts",
+]
+executionEnvironments = [{ "root" = "api" }, { "root" = "pkg" }]
 strict = ["."]
-pythonVersion = "3.8"
+pythonVersion = "3.12"
 
 [project.scripts]
 pare = "pare.cli.main:main"
@@ -98,5 +115,5 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.setuptools.packages.find]
-where = ["."]
+where = ["pkg"]
 include = ["pare*"]
