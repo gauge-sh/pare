@@ -10,8 +10,7 @@ from pare.client import get_current_git_hash
 from pare.login import login
 
 
-def deploy(file_path_str: str) -> None:
-    file_paths = [path.strip() for path in file_path_str.split(",")]
+def deploy(file_paths: list[str]) -> None:
     DeployHandler(file_paths=file_paths).deploy()
 
 
@@ -36,6 +35,9 @@ def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
 
 
 def status() -> None:
+    # how should this work?
+    # hit list API for services
+    # show a table using Rich
     """Check the status of the application."""
     print("Checking the status of the application...")
     print("Status checked")
