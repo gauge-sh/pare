@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import json
+from typing import Callable, TypeVar
 
 import boto3
 from botocore.exceptions import ClientError
+from typing_extensions import ParamSpec
 
 from src import settings
 
@@ -33,6 +36,30 @@ def create_ecr_repository(repository_name: str) -> bool:
     return True
 
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+async def update_with_backoff(
+    update_func: Callable[P, R], *args: P.args, **kwargs: P.kwargs
+) -> R:
+    retries = 0
+    while retries < settings.AWS_LAMBDA_UPDATE_MAX_RETRIES:
+        try:
+            return update_func(*args, **kwargs)
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ResourceConflictException":  # type: ignore
+                wait_time = settings.AWS_LAMBDA_UPDATE_INITIAL_BACKOFF * (2**retries)
+                print(
+                    f"ResourceConflictException encountered. Retrying in {wait_time} seconds..."
+                )
+                await asyncio.sleep(wait_time)
+                retries += 1
+            else:
+                raise
+    raise Exception("Max retries reached. Failed to update Lambda function.")
+
+
 async def deploy_python_lambda_function_from_ecr(
     function_name: str,
     image_name: str,
@@ -44,14 +71,17 @@ async def deploy_python_lambda_function_from_ecr(
     try:
         lambda_client.get_function(FunctionName=function_name)  # type: ignore
         # If we reach here, the function exists, so we update it
-        response = lambda_client.update_function_code(  # type: ignore
-            FunctionName=function_name, ImageUri=image_name
+        response = await update_with_backoff(
+            lambda_client.update_function_code,  # type: ignore
+            FunctionName=function_name,
+            ImageUri=image_name,
         )
         print(f"Updated existing Lambda function: {function_name}")
 
-        # Update environment variables
-        lambda_client.update_function_configuration(  # type: ignore
-            FunctionName=function_name, Environment={"Variables": environment_variables}
+        await update_with_backoff(
+            lambda_client.update_function_configuration,  # type: ignore
+            FunctionName=function_name,
+            Environment={"Variables": environment_variables},
         )
         print(f"Updated environment variables for Lambda function: {function_name}")
     except ClientError as e:
