@@ -8,7 +8,7 @@ from environs import Env
 env = Env()
 env.read_env()
 
-PARE_API_URL: str = env.str("PARE_API_URL", "http://localhost:8000")
+PARE_API_URL: str = env.str("PARE_API_URL", "https://api.pare.gauge.sh")
 PARE_API_VERSION: str = env.str("PARE_API_VERSION", "v0.1")
 PARE_API_DEPLOY_URL_PATH: str = env.str("PARE_API_DEPLOY_URL_PATH", "/deploy/")
 PARE_API_SERVICES_URL_PATH: str = env.str("PARE_API_SERVICES_URL_PATH", "/services/")
