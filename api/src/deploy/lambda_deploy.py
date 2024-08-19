@@ -71,7 +71,7 @@ async def deploy_python_lambda_function_from_ecr(
     try:
         lambda_client.get_function(FunctionName=function_name)  # type: ignore
         # If we reach here, the function exists, so we update it
-        response = await update_with_backoff(
+        response = await update_with_backoff(  # type: ignore
             lambda_client.update_function_code,  # type: ignore
             FunctionName=function_name,
             ImageUri=image_name,
