@@ -12,7 +12,7 @@ def hello_world():
     print("Hello World!")
 
 
-@endpoint(name="name2")
+@endpoint(name="name2", dependencies=["pydantic==2.8.2"])
 def test(echo: str):
     if "PARE_TEST_TWO" in os.environ:
         return f"[{os.environ["PARE_TEST_TWO"]}] {echo}"

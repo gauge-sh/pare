@@ -91,4 +91,62 @@ To delete a deployed function, use `pare delete`:
 ```
 
 
-## Advanced
+## Notes on Deployment
+
+The `pare deploy` command accepts a sequence of filepaths.
+These files will be collected into a single bundle, which will be built and deployed with each function.
+
+The entrypoint for each function will be defined by `pare.endpoint`, and it is critical that
+all of the entrypoint's imports are included in the bundle. Third party dependencies are bundled
+with each function individually, see the section below for more details.
+
+In the future, we plan to use the technology behind [Tach] to automatically determine
+the transitive dependencies in your project and create a complete bundle. Reach out on [Discord](https://discord.gg/Kz2TnszerR)
+if this is an important feature for you!
+
+
+## Advanced Usage
+
+
+### 3rd Party Dependencies
+
+Pare allows installing 3rd party dependencies from PyPI for each deployed function.
+
+Use the `dependencies` kwarg in the `endpoint` decorator to specify the dependencies for a function,
+and they will automatically be installed during the deploy.
+
+```python
+@pare.endpoint(name="3rd-party-deps", dependencies=["pydantic", ...])
+```
+
+The dependency names can specify version numbers as well, just as if they were listed in `requirements.txt`.
+
+```python
+@pare.endpoint(name="3rd-party-deps", dependencies=["pydantic==2.8.2", ...])
+```
+
+### Environment Variables
+
+Pare allows setting environment variables for your functions during the deploy.
+
+Use the `-e` option to set environment variables:
+
+```shell
+> pare deploy my_module.py -e MY_VARIABLE=myvalue -e OTHER_VARIABLE=othervalue [...]
+```
+
+
+### Atomic Deployment
+
+Pare supports 'atomic deployment' of services based on a git hash.
+
+When atomic deployment is disabled (the default),
+the Pare API will route requests by name to the latest deployed version of your function.
+
+When atomic deployment is enabled, the Pare SDK will include the git hash in its requests to your deployed functions,
+and the Pare API will route your request to the service with a matching git hash.
+
+This feature is enabled on the client-side with the environment variable `PARE_ATOMIC_DEPLOYMENT_ENABLED`.
+
+Since your main application likely will not have access to `git` to determine its git hash at runtime,
+you will need to set the `PARE_GIT_HASH` environment variable during your build and deployment pipeline.
