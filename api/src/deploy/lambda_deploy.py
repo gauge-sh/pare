@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
-from typing import Callable, TypeVar
+from typing import Any, Callable, TypeVar
 
 import boto3
 from botocore.exceptions import ClientError
@@ -11,7 +11,26 @@ from typing_extensions import ParamSpec
 from src import settings
 
 
-def create_ecr_repository(repository_name: str) -> bool:
+def generate_ecr_repo_policy(function_name: str) -> dict[str, Any]:
+    return {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "LambdaECRImageRetrievalPolicy",
+                "Effect": "Allow",
+                "Principal": {"Service": "lambda.amazonaws.com"},
+                "Action": ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer"],
+                "Condition": {
+                    "StringLike": {
+                        "aws:sourceArn": f"arn:aws:lambda:{settings.AWS_DEFAULT_REGION}:{settings.AWS_ACCOUNT_ID}:function:{function_name}"
+                    }
+                },
+            }
+        ],
+    }
+
+
+def create_ecr_repository(repository_name: str, function_name: str) -> bool:
     ecr_client = boto3.client("ecr", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
     try:
@@ -30,7 +49,7 @@ def create_ecr_repository(repository_name: str) -> bool:
 
     ecr_client.set_repository_policy(  # type: ignore
         repositoryName=repository_name,
-        policyText=json.dumps(settings.ECR_REPO_POLICY),
+        policyText=json.dumps(generate_ecr_repo_policy(function_name)),
     )
     print(f"Repository policy set for '{repository_name}'")
     return True

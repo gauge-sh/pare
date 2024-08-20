@@ -45,7 +45,8 @@ async def deploy_image(
 ) -> bool:
     repo_name = build_ecr_repo_name(user, service_config.name)
     tag = deploy_config.git_hash
-    repo_created = create_ecr_repository(repo_name)
+    function_name = build_lambda_function_name(repo_name, tag)
+    repo_created = create_ecr_repository(repo_name, function_name=function_name)
     if not repo_created:
         print(f"Failed to create ECR repository for {repo_name}")
         return False
@@ -61,7 +62,7 @@ async def deploy_image(
         return False
 
     return await deploy_python_lambda_function_from_ecr(
-        function_name=build_lambda_function_name(repo_name, tag),
+        function_name=function_name,
         image_name=build_result.image_name,
         environment_variables=deploy_config.environment_variables,
     )
