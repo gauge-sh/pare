@@ -11,6 +11,8 @@ Pare is the easiest way to deploy Python Lambdas alongside your primary web appl
 
 [Discord](https://discord.gg/Kz2TnszerR)
 
+![pare_demo](https://github.com/user-attachments/assets/2513eb92-51f3-45c6-9eb3-0b71dafe8a48)
+
 
 ## Why use Pare?
 
