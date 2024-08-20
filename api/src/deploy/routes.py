@@ -37,6 +37,12 @@ def build_lambda_function_name(repo_name: str, tag: str) -> str:
     return f"{repo_name}_{tag}"
 
 
+# AUTH SENSITIVE!
+# This pattern is used in the ECR policy to allow Lambda to pull images
+def build_lambda_function_name_pattern(repo_name: str) -> str:
+    return f"{repo_name}_*"
+
+
 async def deploy_image(
     bundle_dir: Path,
     service_config: ServiceConfig,
@@ -46,7 +52,9 @@ async def deploy_image(
     repo_name = build_ecr_repo_name(user, service_config.name)
     tag = deploy_config.git_hash
     function_name = build_lambda_function_name(repo_name, tag)
-    repo_created = create_ecr_repository(repo_name, function_name=function_name)
+    function_name_pattern = build_lambda_function_name_pattern(repo_name)
+
+    repo_created = create_ecr_repository(repo_name, function_name=function_name_pattern)
     if not repo_created:
         print(f"Failed to create ECR repository for {repo_name}")
         return False
