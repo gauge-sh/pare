@@ -25,48 +25,77 @@ if TYPE_CHECKING:
 router = APIRouter(prefix=f"/{API_VERSION}/services")
 
 
-async def service_for_user(
-    deploy_version: str | None = Depends(get_deploy_version),
+async def services_for_user_by_name(
     user: User = Depends(get_user),
-    service_name: str = Path(
-        ..., title="Service Name", description="Name of the deployed service"
-    ),
+    service_name: str = Path(..., title="Service Name"),
     db: AsyncSession = Depends(get_db),
-) -> Service:
+) -> list[Service]:
     async with db as session:
         result = await session.execute(
             select(Service)
             .join(Service.deployment)
             .join(Deployment.user)
-            .options(joinedload(Service.deployment).joinedload(Deployment.user))
-            .where((User.id == user.id) & (Service.name == service_name))
-            .order_by(Service.created_at.desc())
+            .where(User.id == user.id, Service.name == service_name)
         )
-
         services = result.scalars().all()
 
         if not services:
-            raise HTTPException(status_code=404, detail="Service not found")
+            raise HTTPException(status_code=404, detail="No services found")
 
-        if deploy_version is None:
-            # If no deploy version is provided, return the latest service
-            return services[0]
+        return list(services)
 
-        matching_service: Service | None = None
-        for service in services:
-            if service.deployment.git_hash == deploy_version:
-                if matching_service:
-                    raise HTTPException(
-                        status_code=500, detail="Multiple services found"
-                    )
-                matching_service = service
 
-        if not matching_service:
-            raise HTTPException(
-                status_code=404, detail="Service not found for deploy version"
-            )
+# Used when invoking a service
+async def service_for_user_by_version_or_latest(
+    deploy_version: str | None = Depends(get_deploy_version),
+    services: list[Service] = Depends(services_for_user_by_name),
+) -> Service:
+    if deploy_version is None:
+        # If no deploy version is provided, return the latest service
+        return services[0]
 
-        return matching_service
+    matching_service: Service | None = None
+    for service in services:
+        if service.deployment.git_hash == deploy_version:
+            if matching_service:
+                raise HTTPException(status_code=500, detail="Multiple services found")
+            matching_service = service
+
+    if not matching_service:
+        raise HTTPException(
+            status_code=404, detail="Service not found for deploy version"
+        )
+
+    return matching_service
+
+
+# Used when deleting a service or getting details about a service
+async def service_for_user_by_version_or_unique_name(
+    deploy_version: str | None = Depends(get_deploy_version),
+    services: list[Service] = Depends(services_for_user_by_name),
+) -> Service:
+    if len(services) == 1:
+        return services[0]
+
+    if deploy_version is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Deploy version is required when more than one service exists for a name.",
+        )
+
+    matching_service: Service | None = None
+    for service in services:
+        if service.deployment.git_hash == deploy_version:
+            if matching_service:
+                raise HTTPException(status_code=500, detail="Multiple services found")
+            matching_service = service
+
+    if not matching_service:
+        raise HTTPException(
+            status_code=404, detail="Service not found for deploy version"
+        )
+
+    return matching_service
 
 
 def get_lambda_function_name(service: Service) -> str:
@@ -99,7 +128,9 @@ class ServiceSchema(BaseModel):
 
 
 @router.get("/{service_name}/", response_model=ServiceSchema)
-def get_lambda_info(service: Service = Depends(service_for_user)):
+def get_lambda_info(
+    service: Service = Depends(service_for_user_by_version_or_unique_name),
+):
     return service
 
 
@@ -124,7 +155,7 @@ async def list_lambda_info(
 
 @router.delete("/delete/{service_name}/")
 async def delete_lambda(
-    service: Service = Depends(service_for_user),
+    service: Service = Depends(service_for_user_by_version_or_unique_name),
     db: AsyncSession = Depends(get_db),
 ) -> Response:
     lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
@@ -172,7 +203,7 @@ async def delete_lambda(
 @router.post("/invoke/{service_name}/")
 def invoke_lambda(
     request_body: Any = Body(),
-    service: Service = Depends(service_for_user),
+    service: Service = Depends(service_for_user_by_version_or_latest),
 ) -> Response:
     lambda_client = boto3.client("lambda", region_name=settings.AWS_DEFAULT_REGION)  # type: ignore
 
