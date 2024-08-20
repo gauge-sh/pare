@@ -2,6 +2,20 @@
 
 Pare is the easiest way to deploy Python Lambdas alongside your primary web application.
 
+[Discord](https://discord.gg/Kz2TnszerR)
+
+
+## Why use Pare?
+
+Pare is built to allow web developers to independently scale parts of a web application.
+More specifically, Pare is useful if you have functions which are:
+
+- compute intensive
+- blocking
+- relatively isolated
+- parallel
+
+Some examples are **document parsing**, **data aggregation**, **webhook handling** and **image processing**.
 
 ## Quickstart
 
@@ -66,3 +80,6 @@ To delete a deployed function, use `pare delete`:
 ```shell
 > pare delete quickstart --git-hash 8a4096b
 ```
+
+
+## Advanced
