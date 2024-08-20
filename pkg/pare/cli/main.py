@@ -32,11 +32,11 @@ def parse_env_vars(env_vars: list[str]) -> dict[str, str]:
     return environment_variables
 
 
-def deploy(file_paths: list[str], env_vars: list[str]) -> None:
+def deploy(file_patterns: list[str], env_vars: list[str]) -> None:
     verify_logged_in()
     environment_variables = parse_env_vars(env_vars)
     DeployHandler(
-        file_paths=file_paths, environment_variables=environment_variables
+        file_patterns=file_patterns, environment_variables=environment_variables
     ).deploy()
 
 
@@ -79,7 +79,10 @@ def create_parser() -> argparse.ArgumentParser:
 
     parser_deploy = subparsers.add_parser("deploy", help="Deploy the application.")
     parser_deploy.add_argument(
-        "file_paths", nargs="+", type=str, help="One or more file paths to deploy."
+        "file_patterns",
+        nargs="+",
+        type=str,
+        help="One or more file patterns to include in the deployed bundle.",
     )
     parser_deploy.add_argument(
         "-e",
@@ -115,7 +118,7 @@ def main() -> None:
     parser = create_parser()
     args = parser.parse_args()
     if args.command == "deploy":
-        deploy(args.file_paths, env_vars=args.env_vars or [])
+        deploy(args.file_patterns, env_vars=args.env_vars or [])
     elif args.command == "status":
         status()
     elif args.command == "delete":

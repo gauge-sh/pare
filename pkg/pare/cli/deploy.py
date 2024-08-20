@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import glob
 import importlib.util
 import inspect
 import os
@@ -22,10 +23,18 @@ from pare.models import DeployConfig, ServiceConfig, ServiceRegistration
 class DeployHandler:
     def __init__(
         self,
-        file_paths: list[str],
+        file_patterns: list[str],
         environment_variables: dict[str, str] | None = None,
     ) -> None:
-        self.file_paths = {Path(file_path) for file_path in file_paths}
+        self.file_paths: set[Path] = set()
+        for pattern in file_patterns:
+            path = Path(pattern)
+            if path.is_dir():
+                self.file_paths.update(path.rglob("**/*.py"))
+            else:
+                self.file_paths.update(
+                    Path(path) for path in glob.glob(pattern, recursive=True)
+                )
         self.environment_variables = environment_variables or {}
         self.deploy_url = f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_DEPLOY_URL_PATH}"
 
@@ -62,7 +71,7 @@ class DeployHandler:
 
     def upload(self, zip_path: Path, deploy_config: DeployConfig) -> None:
         with log_task(
-            start_message="Uploading bundle...", end_message="Bundle uploaded"
+            start_message="Deploying bundle...", end_message="Bundle deployed"
         ):
             with open(zip_path, "rb") as zip_file:
                 files = {
