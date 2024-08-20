@@ -35,6 +35,7 @@ async def services_for_user_by_name(
             select(Service)
             .join(Service.deployment)
             .join(Deployment.user)
+            .options(joinedload(Service.deployment).joinedload(Deployment.user))
             .where(User.id == user.id, Service.name == service_name)
         )
         services = result.scalars().all()
