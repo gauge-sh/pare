@@ -1,4 +1,4 @@
-# Pare
+# 🔪 Pare
 
 [![version](https://img.shields.io/pypi/v/pare.svg)](https://pypi.Python.org/pypi/pare)
 [![license](https://img.shields.io/pypi/l/pare.svg)](https://pypi.Python.org/pypi/pare)
