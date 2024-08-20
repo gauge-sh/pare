@@ -1,5 +1,12 @@
 # Pare
 
+[![version](https://img.shields.io/pypi/v/pare.svg)](https://pypi.Python.org/pypi/pare)
+[![license](https://img.shields.io/pypi/l/pare.svg)](https://pypi.Python.org/pypi/pare)
+[![python](https://img.shields.io/pypi/pyversions/pare.svg)](https://pypi.Python.org/pypi/pare)
+[![ci](https://github.com/gauge-sh/pare/actions/workflows/ci.yml/badge.svg)](https://github.com/gauge-sh/pare/actions/workflows/ci.yml)
+[![pyright](https://microsoft.github.io/pyright/img/pyright_badge.svg)](https://microsoft.github.io/pyright/)
+[![ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 Pare is the easiest way to deploy Python Lambdas alongside your primary web application.
 
 [Discord](https://discord.gg/Kz2TnszerR)
@@ -16,6 +23,8 @@ More specifically, Pare is useful if you have functions which are:
 - parallel
 
 Some examples are **document parsing**, **data aggregation**, **webhook handling** and **image processing**.
+
+With Pare, you can offload these tasks from your main web server, while also getting automatic scaling for concurrent requests.
 
 ## Quickstart
 
