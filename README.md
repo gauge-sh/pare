@@ -98,11 +98,13 @@ To delete a deployed function, use `pare delete`:
 
 ## Notes on Deployment
 
-The `pare deploy` command accepts a sequence of filepaths.
-These files will be collected into a single bundle, which will be built and deployed with each function.
+The `pare deploy` command accepts a sequence of file patterns (filepaths, directories, or glob paths).
+The corresponding files will be collected into a single bundle, which will be built and deployed with each function.
 
 The entrypoint for each function will be defined by `pare.endpoint`, and it is critical that
-all of the entrypoint's imports are included in the bundle. Third party dependencies are bundled
+all of the entrypoint's imports are included in the bundle.
+
+Third party dependencies are bundled
 with each function individually, see the section below for more details.
 
 In the future, we plan to use the technology behind [Tach] to automatically determine
