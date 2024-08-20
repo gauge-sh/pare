@@ -33,3 +33,10 @@ def get_current_git_hash() -> str:
     except subprocess.CalledProcessError:
         log_error("Pare failed to get the current git hash.")
         sys.exit(1)
+
+
+def get_client_headers() -> dict[str, str]:
+    headers = {settings.PARE_API_KEY_HEADER: settings.PARE_API_KEY}
+    if settings.PARE_ATOMIC_DEPLOYMENT_ENABLED:
+        headers[settings.PARE_ATOMIC_DEPLOYMENT_HEADER] = get_current_git_hash()
+    return headers

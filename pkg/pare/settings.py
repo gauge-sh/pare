@@ -24,11 +24,12 @@ if not PARE_API_KEY and PARE_API_KEY_FILE:
         PARE_API_KEY = pare_api_key_path.read_text()
 
 PARE_API_KEY_HEADER: str = env.str("PARE_API_KEY_HEADER", "X-Pare-API-Key")
+
+
+PARE_ATOMIC_DEPLOYMENT_ENABLED: bool = env.bool("PARE_ATOMIC_DEPLOYMENT_ENABLED", False)
 PARE_ATOMIC_DEPLOYMENT_HEADER: str = env.str(
     "PARE_ATOMIC_DEPLOYMENT_HEADER", "X-Pare-Atomic-Deployment"
 )
-
-
 PARE_GIT_HASH: str = env.str("PARE_GIT_HASH", "")
 
 _KNOWN_GIT_HASH_ENV_VARS = [
