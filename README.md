@@ -71,6 +71,9 @@ After logging in, you can run a deploy of your function into the Pare Cloud:
 > pare deploy my_module.py
 ```
 
+> [!NOTE]
+> This generally takes between 3s (when heavily cached) and 60s (no cache, heavy dependencies)
+
 Once the deploy is finished, you can verify with `pare status`:
 
 ```shell

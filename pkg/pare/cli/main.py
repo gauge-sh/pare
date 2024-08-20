@@ -9,7 +9,6 @@ from pare import settings
 from pare.cli.delete import delete_function
 from pare.cli.deploy import DeployHandler
 from pare.cli.status import show_status
-from pare.client import get_current_git_hash
 from pare.login import login
 
 
@@ -54,12 +53,13 @@ def delete(function_name: str, git_hash: str = "", force: bool = False) -> None:
         console.print("[bold white]Operation cancelled.[/bold white]")
         return
 
-    if not git_hash:
-        git_hash = get_current_git_hash()
     delete_function(function_name, git_hash=git_hash)
-    console.print(
-        f"[bold red]'{function_name}' (git hash: '{git_hash}') deleted.[/bold red]"
-    )
+    if git_hash:
+        console.print(
+            f"[bold red]'{function_name}' (git hash: '{git_hash}') deleted.[/bold red]"
+        )
+    else:
+        console.print(f"[bold red]'{function_name}' deleted.[/bold red]")
 
 
 def status() -> None:
