@@ -21,7 +21,7 @@ More specifically, Pare is useful if you have functions which are:
 
 - compute intensive
 - blocking
-- relatively isolated
+- isolated
 - parallel
 
 Some examples are **document parsing**, **data aggregation**, **webhook handling** and **image processing**.
