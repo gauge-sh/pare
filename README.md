@@ -127,6 +127,9 @@ The dependency names can specify version numbers as well, just as if they were l
 @pare.endpoint(name="3rd-party-deps", dependencies=["pydantic==2.8.2", ...])
 ```
 
+> [!TIP]
+> If you want to quickly determine the 3rd party dependencies used by a set of files, consider using [Tach](https://github.com/gauge-sh/tach) with [`tach report-external`](https://docs.gauge.sh/usage/commands#tach-report-external)
+
 ### Environment Variables
 
 Pare allows setting environment variables for your functions during the deploy.
