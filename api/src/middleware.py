@@ -33,14 +33,11 @@ async def get_user(request: Request, db: AsyncSession = Depends(get_db)) -> User
     return user
 
 
-async def get_deploy_version(request: Request) -> str:
+async def get_deploy_version(request: Request) -> str | None:
     try:
         return request.state.deploy_version
     except AttributeError:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Must provide '{settings.PARE_ATOMIC_DEPLOYMENT_HEADER}' header.",
-        )
+        return None
 
 
 AUTH_EXEMPT = {"/healthcheck/", "/login-with-github/"}

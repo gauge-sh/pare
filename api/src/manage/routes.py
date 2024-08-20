@@ -26,7 +26,7 @@ router = APIRouter(prefix=f"/{API_VERSION}/services")
 
 
 async def service_for_user(
-    deploy_version: str = Depends(get_deploy_version),
+    deploy_version: str | None = Depends(get_deploy_version),
     user: User = Depends(get_user),
     service_name: str = Path(
         ..., title="Service Name", description="Name of the deployed service"
@@ -40,12 +40,17 @@ async def service_for_user(
             .join(Deployment.user)
             .options(joinedload(Service.deployment).joinedload(Deployment.user))
             .where((User.id == user.id) & (Service.name == service_name))
+            .order_by(Service.created_at.desc())
         )
 
         services = result.scalars().all()
 
         if not services:
             raise HTTPException(status_code=404, detail="Service not found")
+
+        if deploy_version is None:
+            # If no deploy version is provided, return the latest service
+            return services[0]
 
         matching_service: Service | None = None
         for service in services:
