@@ -17,7 +17,7 @@ from src.constants import API_VERSION
 from src.core.models import DeployConfig, ServiceConfig
 from src.db import get_db
 from src.deploy import create_ecr_repository, deploy_python_lambda_function_from_ecr
-from src.middleware import get_total_services_deployed_for_user, get_user
+from src.middleware import get_total_deploys_for_user, get_user
 from src.models import Deployment, Service, User
 
 if TYPE_CHECKING:
@@ -82,13 +82,13 @@ async def deploy(
     file: Annotated[UploadFile, File()],
     json_data: Annotated[str, Form()],
     user: User = Depends(get_user),
-    service_count: int = Depends(get_total_services_deployed_for_user),
+    deploy_count: int = Depends(get_total_deploys_for_user),
     db: AsyncSession = Depends(get_db),
 ):
-    if service_count >= settings.MAX_SERVICES_PER_USER:
+    if deploy_count >= settings.MAX_DEPLOYS_PER_USER:
         raise HTTPException(
             status_code=403,
-            detail="User has reached the maximum number of services.",
+            detail=f"User has reached the maximum number of deploys ({settings.MAX_DEPLOYS_PER_USER}).",
         )
 
     try:

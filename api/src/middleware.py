@@ -9,7 +9,7 @@ from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from src import settings
 from src.db import get_db
-from src.models import Deployment, Service, User
+from src.models import Deployment, User
 
 if TYPE_CHECKING:
     from fastapi import FastAPI, Request
@@ -33,13 +33,12 @@ async def get_user(request: Request, db: AsyncSession = Depends(get_db)) -> User
     return user
 
 
-async def get_total_services_deployed_for_user(
+async def get_total_deploys_for_user(
     user: User = Depends(get_user), db: AsyncSession = Depends(get_db)
 ) -> int:
     async with db as session:
         query = (
-            select(func.count(Service.id))
-            .join(Service.deployment)
+            select(func.count(Deployment.id))
             .join(Deployment.user)
             .where(User.id == user.id)
         )
