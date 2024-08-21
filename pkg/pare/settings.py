@@ -6,7 +6,6 @@ from pathlib import Path
 from environs import Env
 
 env = Env()
-env.read_env()
 
 PARE_API_URL: str = env.str("PARE_API_URL", "https://api.pare.gauge.sh")
 PARE_API_VERSION: str = env.str("PARE_API_VERSION", "v0.1")
