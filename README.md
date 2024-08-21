@@ -78,6 +78,9 @@ After logging in, you can run a deploy of your function into the Pare Cloud:
 > [!NOTE]
 > This generally takes between 3s (when heavily cached) and 60s (no cache, heavy dependencies)
 
+> [!NOTE]
+> Make sure you are in a git repository. Pare uses the latest git hash to tag your deploy.
+
 Once the deploy is finished, you can verify with `pare status`:
 
 ```shell
