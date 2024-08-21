@@ -38,8 +38,7 @@ async def get_total_services_deployed_for_user(
 ) -> int:
     async with db as session:
         query = (
-            func.count(Service.id)
-            .select_from(Service)
+            select(func.count(Service.id))
             .join(Service.deployment)
             .join(Deployment.user)
             .where(User.id == user.id)
