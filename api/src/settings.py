@@ -39,3 +39,6 @@ PARE_ATOMIC_DEPLOYMENT_HEADER: str = env.str(
     "PARE_ATOMIC_DEPLOYMENT_HEADER", "X-Pare-Atomic-Deployment"
 )
 PARE_API_KEY_HEADER: str = env.str("PARE_API_KEY_HEADER", "X-Pare-API-Key")
+
+
+MAX_SERVICES_PER_USER: int = env.int("MAX_SERVICES_PER_USER", 50)

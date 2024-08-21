@@ -11,12 +11,13 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import select
 from typing_extensions import Annotated
 
+from src import settings
 from src.build import build_and_publish_image_to_ecr, unzip_file, write_to_zipfile
 from src.constants import API_VERSION
 from src.core.models import DeployConfig, ServiceConfig
 from src.db import get_db
 from src.deploy import create_ecr_repository, deploy_python_lambda_function_from_ecr
-from src.middleware import get_user
+from src.middleware import get_total_services_deployed_for_user, get_user
 from src.models import Deployment, Service, User
 
 if TYPE_CHECKING:
@@ -81,8 +82,15 @@ async def deploy(
     file: Annotated[UploadFile, File()],
     json_data: Annotated[str, Form()],
     user: User = Depends(get_user),
+    service_count: int = Depends(get_total_services_deployed_for_user),
     db: AsyncSession = Depends(get_db),
 ):
+    if service_count >= settings.MAX_SERVICES_PER_USER:
+        raise HTTPException(
+            status_code=403,
+            detail="User has reached the maximum number of services.",
+        )
+
     try:
         deploy_config = DeployConfig(**json.loads(json_data))
         # TODO: more careful handling here
