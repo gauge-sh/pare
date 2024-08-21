@@ -30,6 +30,10 @@ With Pare, you can offload these tasks from your main web server, while also get
 
 ## Quickstart
 
+```shell
+> pip install pare
+```
+
 First, mark the function you want to deploy onto a Lambda:
 
 ```python
@@ -92,7 +96,7 @@ That's it! Your function is now serverless.
 To delete a deployed function, use `pare delete`:
 
 ```shell
-> pare delete quickstart --git-hash 8a4096b
+> pare delete quickstart
 ```
 
 
