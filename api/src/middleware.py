@@ -34,7 +34,7 @@ async def get_user(request: Request, db: AsyncSession = Depends(get_db)) -> User
 
 
 async def get_total_services_deployed_for_user(
-    user: User, db: AsyncSession = Depends(get_db)
+    user: User = Depends(get_user), db: AsyncSession = Depends(get_db)
 ) -> int:
     async with db as session:
         query = (
