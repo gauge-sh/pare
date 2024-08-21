@@ -33,7 +33,9 @@ class DeployHandler:
                 self.file_paths.update(path.rglob("**/*.py"))
             else:
                 self.file_paths.update(
-                    Path(path) for path in glob.glob(pattern, recursive=True)
+                    Path(path)
+                    for path in glob.glob(pattern, recursive=True)
+                    if path.endswith(".py")
                 )
         self.environment_variables = environment_variables or {}
         self.deploy_url = f"{settings.PARE_API_URL}/{settings.PARE_API_VERSION}{settings.PARE_API_DEPLOY_URL_PATH}"

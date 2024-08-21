@@ -14,9 +14,9 @@ def test_parser_deploy():
     parser = create_parser()
     args = parser.parse_args(["deploy", "test_file.py"])
     assert args.command == "deploy"
-    assert args.file_paths == ["test_file.py"]
+    assert args.file_patterns == ["test_file.py"]
     args = parser.parse_args(["deploy", "test_file.py", "test_other.py"])
-    assert args.file_paths == ["test_file.py", "test_other.py"]
+    assert args.file_patterns == ["test_file.py", "test_other.py"]
 
 
 def test_parser_deploy_no_file(capsys: CaptureFixture[str]):
