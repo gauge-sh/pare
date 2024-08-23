@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 import aiohttp
 import requests
@@ -66,60 +66,64 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
-def endpoint(name: str, dependencies: list[str] = []) -> Callable[..., Any]:
-    def endpoint_decorator(
-        function: Callable[P, R],
-    ) -> Callable[P, R]:
-        def _pare_register() -> ServiceRegistration:
-            return ServiceRegistration(
-                name=name, function=function.__name__, dependencies=dependencies
-            )
+class PareEndpoint(Generic[P, R]):
+    def __init__(
+        self, func: Callable[P, R], name: str, dependencies: list[str] = []
+    ) -> None:
+        self.func = func
+        self.name = name
+        self.dependencies = dependencies
 
-        function._pare_register = _pare_register  # pyright: ignore[reportFunctionMemberAccess]
+    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
+        return self.func(*args, **kwargs)
 
-        def _as_lambda_handler() -> Callable[[Any, Any], Any]:
-            def _lambda_handler(event: Any, context: Any) -> Any:
-                if not isinstance(event, dict):
-                    return {
-                        "status": 400,
-                        "detail": "Could not parse incoming data. The request body must be JSON.",
-                    }
-                if "args" not in event and "kwargs" not in event:
-                    return {
-                        "status": 400,
-                        "detail": "Incoming JSON should contain 'args' or 'kwargs' to invoke the function.",
-                    }
-                try:
-                    return {
-                        "status": 200,
-                        "result": function(
-                            *event.get("args", []),  # type: ignore
-                            **event.get("kwargs", {}),  # type: ignore
-                        ),
-                    }
-                except Exception as e:
-                    return {"status": 500, "detail": str(e)}
+    def _pare_register(self) -> ServiceRegistration:
+        return ServiceRegistration(
+            name=self.name, function=self.func.__name__, dependencies=self.dependencies
+        )
 
-            return _lambda_handler
+    def as_lambda_function_url_handler(self) -> Callable[[Any, Any], Any]:
+        def _lambda_handler(event: Any, context: Any) -> Any:
+            if not isinstance(event, dict):
+                return {
+                    "status": 400,
+                    "detail": "Could not parse incoming data. The request body must be JSON.",
+                }
+            if "args" not in event and "kwargs" not in event:
+                return {
+                    "status": 400,
+                    "detail": "Incoming JSON should contain 'args' or 'kwargs' to invoke the function.",
+                }
+            try:
+                return {
+                    "status": 200,
+                    "result": self.func(
+                        *event.get("args", []),  # type: ignore
+                        **event.get("kwargs", {}),  # type: ignore
+                    ),
+                }
+            except Exception as e:
+                return {"status": 500, "detail": str(e)}
 
-        function.as_lambda_function_url_handler = _as_lambda_handler  # pyright: ignore[reportFunctionMemberAccess]
+        return _lambda_handler
 
-        def _invoke_fn(*args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
-            return invoke_endpoint(
-                name,
-                RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
-            )
+    def invoke(self, *args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
+        return invoke_endpoint(
+            self.name,
+            RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
+        )
 
-        function.invoke = _invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
+    async def invoke_async(self, *args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
+        return await async_invoke_endpoint(
+            self.name,
+            RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
+        )
 
-        async def _async_invoke_fn(*args: P.args, **kwargs: P.kwargs) -> Callable[P, R]:
-            return await async_invoke_endpoint(
-                name,
-                RemoteInvocationArguments(args=args, kwargs=kwargs),  # type: ignore
-            )
 
-        function.invoke_async = _async_invoke_fn  # pyright: ignore[reportFunctionMemberAccess]
+def endpoint(
+    name: str, dependencies: list[str] = []
+) -> Callable[[Callable[P, R]], PareEndpoint[P, R]]:
+    def decorator(func: Callable[P, R]) -> PareEndpoint[P, R]:
+        return PareEndpoint(func, name, dependencies)
 
-        return function
-
-    return endpoint_decorator
+    return decorator
