@@ -28,6 +28,11 @@ def invoke_endpoint(function_name: str, arguments: RemoteInvocationArguments) ->
         )
         response.raise_for_status()
         json_response = response.json()
+        json_status = json_response.get("status", 500)
+        if json_status != 200:
+            raise errors.PareInvokeError(
+                f"Function invocation for '{function_name}' failed with status: {json_status}. Detail: {json_response.get('detail', '[No detail provided]')}"
+            )
         return json_response.get("result")
     except requests.HTTPError as e:
         raise errors.PareInvokeError(
@@ -51,6 +56,11 @@ async def async_invoke_endpoint(
             ) as response:
                 response.raise_for_status()
                 json_response = await response.json()
+                json_status = json_response.get("status", 500)
+                if json_status != 200:
+                    raise errors.PareInvokeError(
+                        f"Function invocation for '{function_name}' failed with status: {json_status}. Detail: {json_response.get('detail', '[No detail provided]')}"
+                    )
                 return json_response.get("result")
         except aiohttp.ClientResponseError as e:
             raise errors.PareInvokeError(

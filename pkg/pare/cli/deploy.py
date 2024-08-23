@@ -99,7 +99,7 @@ class DeployHandler:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
                 for name, obj in inspect.getmembers(module):
-                    if inspect.isfunction(obj) and hasattr(obj, "_pare_register"):
+                    if callable(obj) and hasattr(obj, "_pare_register"):
                         try:
                             service_registration = cast(
                                 ServiceRegistration,
